@@ -2,26 +2,16 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 
-// Safely access VITE_API_URL with a fallback
-const API_URL = import.meta.env.VITE_API_URL || "https://your-backend-url.onrender.com"; // Replace with your Render URL as a fallback
+// Hardcode the API URL to bypass environment variable issues
+const API_URL = "https://golf-scorecard-app-u07h.onrender.com"; // Replace with your actual Render backend URL
 
-// Validate the API URL before using it
-if (!API_URL) {
-  console.error("❌ VITE_API_URL is not defined and no fallback provided. Socket.io and API requests will fail.");
-}
-
-// Connect to your backend Socket.io server only if API_URL is defined
-const socket = API_URL ? io(API_URL) : null;
+// Connect to your backend Socket.io server
+const socket = io(API_URL);
 
 export default function Scorecard({ user, group, scorecard, setScorecard }) {
   const [userNames, setUserNames] = useState({});
 
   useEffect(() => {
-    if (!socket) {
-      console.error("❌ Socket.io connection not established due to missing API_URL.");
-      return;
-    }
-
     socket.emit("joinGroup", group._id);
 
     socket.on("scorecardUpdated", (updated) => {
@@ -35,10 +25,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
 
   useEffect(() => {
     const fetchUserNames = async () => {
-      if (!scorecard || !scorecard.scores || !API_URL) {
-        console.error("❌ Cannot fetch user names: Missing scorecard, scores, or API_URL.");
-        return;
-      }
+      if (!scorecard || !scorecard.scores) return;
 
       const userIds = Object.keys(scorecard.scores);
 
@@ -61,11 +48,6 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
   if (!scorecard) return <p>Loading scorecard...</p>;
 
   const updateScore = async (holeIndex, strokes) => {
-    if (!API_URL) {
-      console.error("❌ Cannot update score: API_URL is not defined.");
-      return;
-    }
-
     try {
       await axios.patch(`${API_URL}/api/scores/update`, {
         groupId: group._id,
