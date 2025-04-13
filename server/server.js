@@ -7,22 +7,25 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 
-app.use(cors({
-  origin: "https://golf-scorecard.vercel.app"
-}));
+// ✅ Fix CORS to match deployed frontend exactly
+app.use(
+  cors({
+    origin: "https://golf-scorecard-app.vercel.app", // MUST match your frontend URL
+    methods: ["GET", "POST", "PATCH"],
+    credentials: true
+  })
+);
 
+app.use(express.json());
 
 // ⚡ Set up Socket.io server
 const { Server } = require("socket.io");
 const io = new Server(server, {
   cors: {
-    origin: "*", // allow all origins for now
+    origin: "https://golf-scorecard-app.vercel.app", // Match frontend again here for Socket.io
     methods: ["GET", "POST", "PATCH"]
   }
 });
-
-app.use(cors());
-app.use(express.json());
 
 // 🟢 Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -32,11 +35,11 @@ mongoose.connect(process.env.MONGO_URI)
 // 🛣️ Import and register routes
 const userRoutes = require("./routes/users");
 const groupRoutes = require("./routes/groups");
-const scoreRoutes = require("./routes/scores")(io); // 👈 call the function with io!
+const scoreRoutes = require("./routes/scores")(io); // 👈 pass socket.io to scores
 
 app.use("/api/users", userRoutes);
 app.use("/api/groups", groupRoutes);
-app.use("/api/scores", scoreRoutes); // 👈 scoreRoutes is now a router instance
+app.use("/api/scores", scoreRoutes);
 
 // ⚡ Handle socket events
 io.on("connection", (socket) => {
