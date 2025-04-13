@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import CreateUser from "./pages/CreateUser";
 import JoinOrCreateGroup from "./pages/JoinOrCreateGroup";
-import Scorecard from "./pages/SC"; // or "./pages/Scorecard" depending on what you stuck with
+import Scorecard from "./pages/SC" 
 
 function App() {
   const [user, setUser] = useState(null);
