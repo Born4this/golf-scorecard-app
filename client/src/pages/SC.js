@@ -3,12 +3,11 @@ import axios from "axios";
 import { io } from "socket.io-client";
 
 // Connect to your backend Socket.io server
-const socket = io("http://localhost:5050");
+const socket = io(import.meta.env.VITE_API_URL);
 
 export default function Scorecard({ user, group, scorecard, setScorecard }) {
   const [userNames, setUserNames] = useState({});
 
-  // Join the Socket.io room for this group
   useEffect(() => {
     socket.emit("joinGroup", group._id);
 
@@ -21,7 +20,6 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     };
   }, [group._id, setScorecard]);
 
-  // Fetch user names when scorecard loads
   useEffect(() => {
     const fetchUserNames = async () => {
       if (!scorecard || !scorecard.scores) return;
@@ -29,12 +27,12 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
       const userIds = Object.keys(scorecard.scores);
 
       try {
-        const res = await axios.post("http://localhost:5050/api/users/names", {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/users/names`, {
           userIds
         });
 
         if (res.status === 200) {
-          setUserNames(res.data); // { userId1: "Mike", userId2: "Alex" }
+          setUserNames(res.data);
         }
       } catch (err) {
         console.error("❌ Error fetching user names:", err);
@@ -45,6 +43,19 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
   }, [scorecard]);
 
   if (!scorecard) return <p>Loading scorecard...</p>;
+
+  const updateScore = async (holeIndex, strokes) => {
+    try {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/api/scores/update`, {
+        groupId: group._id,
+        userId: user._id,
+        holeIndex,
+        strokes
+      });
+    } catch (err) {
+      console.error("❌ Error updating score:", err);
+    }
+  };
 
   return (
     <div className="container">
@@ -95,12 +106,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
                       value={scores[holeIndex]}
                       min="0"
                       onChange={(e) =>
-                        axios.patch("http://localhost:5050/api/scores/update", {
-                          groupId: group._id,
-                          userId: user._id,
-                          holeIndex,
-                          strokes: Number(e.target.value)
-                        })
+                        updateScore(holeIndex, Number(e.target.value))
                       }
                     />
                   ) : (

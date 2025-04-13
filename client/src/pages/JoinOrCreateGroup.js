@@ -5,7 +5,6 @@ export default function JoinOrCreateGroup({ user, setGroup }) {
   const [groupName, setGroupName] = useState("");
   const [joinGroupId, setJoinGroupId] = useState("");
 
-  // 🔍 Read group ID from URL query parameter
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const groupFromURL = params.get("group");
@@ -19,7 +18,7 @@ export default function JoinOrCreateGroup({ user, setGroup }) {
     if (!groupName) return alert("Enter a group name");
 
     try {
-      const res = await axios.post("http://localhost:5050/api/groups", {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/groups`, {
         groupName,
         userId: user._id
       });
@@ -35,7 +34,7 @@ export default function JoinOrCreateGroup({ user, setGroup }) {
     if (!joinGroupId) return alert("Enter a group ID");
 
     try {
-      const res = await axios.post("http://localhost:5050/api/groups/join", {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/groups/join`, {
         groupId: joinGroupId,
         userId: user._id
       });
