@@ -8,7 +8,7 @@ export default function CreateUser({ setUser }) {
     if (!name) return alert("Enter your name");
 
     try {
-      const res = await axios.post("http://localhost:5050/api/users", {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/users`, {
         name,
         isTemporary: true
       });
