@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import CreateUser from "./pages/CreateUser";
 import JoinOrCreateGroup from "./pages/JoinOrCreateGroup";
-import Scorecard from "./pages/Scorecard";
+import Scorecard from "./pages/SC"; // or "./pages/Scorecard" depending on what you stuck with
 
 function App() {
   const [user, setUser] = useState(null);
@@ -13,14 +13,14 @@ function App() {
       if (!group || !user) return;
 
       try {
-        const res = await fetch(`http://localhost:5050/api/scores/${group._id}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/scores/${group._id}`);
 
         if (res.ok) {
           const data = await res.json();
           setScorecard(data);
         } else if (res.status === 404) {
           // Scorecard doesn't exist — create it
-          const createRes = await fetch("http://localhost:5050/api/scores", {
+          const createRes = await fetch(`${import.meta.env.VITE_API_URL}/api/scores`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -59,7 +59,14 @@ function App() {
     );
   }
 
-  return <Scorecard user={user} group={group} scorecard={scorecard} setScorecard={setScorecard} />;
+  return (
+    <Scorecard
+      user={user}
+      group={group}
+      scorecard={scorecard}
+      setScorecard={setScorecard}
+    />
+  );
 }
 
 export default App;
