@@ -3,7 +3,8 @@ import axios from "axios";
 import { io } from "socket.io-client";
 
 // Hardcode the API URL to bypass environment variable issues
-const API_URL = "https://golf-scorecard-app-u07h.onrender.com"; // Replace with your actual Render backend URL
+const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
+const FRONTEND_URL = "https://golf-scorecard-app.vercel.app"; // Add this for building invite links
 
 // Connect to your backend Socket.io server
 const socket = io(API_URL);
@@ -60,6 +61,12 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     }
   };
 
+  const copyInviteLink = () => {
+    const link = `${FRONTEND_URL}?group=${group._id}`;
+    navigator.clipboard.writeText(link);
+    alert("Invite link copied to clipboard!");
+  };
+
   return (
     <div className="container">
       <h2>{group.groupName}</h2>
@@ -75,13 +82,8 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         <div style={{ marginBottom: 6 }}>
           <strong>Group ID:</strong> {group._id}
         </div>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(group._id);
-            alert("Group ID copied to clipboard!");
-          }}
-        >
-          Copy Group ID
+        <button onClick={copyInviteLink}>
+          Copy Invite Link
         </button>
       </div>
 
