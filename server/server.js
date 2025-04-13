@@ -7,6 +7,11 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 
+app.use(cors({
+  origin: "https://golf-scorecard.vercel.app"
+}));
+
+
 // ⚡ Set up Socket.io server
 const { Server } = require("socket.io");
 const io = new Server(server, {
