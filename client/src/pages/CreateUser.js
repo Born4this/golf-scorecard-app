@@ -24,7 +24,7 @@ export default function CreateUser({ setUser }) {
   };
 
   return (
-    <div className="fullscreen-center">
+    <div className="fullscreen-center" style={{ paddingTop: "10vh" }}>
       <div style={{ padding: 20, textAlign: "center" }}>
         <h2>Enter Your Name</h2>
         <input
