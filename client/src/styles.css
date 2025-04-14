@@ -26,7 +26,7 @@ h2 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 70vh; /* place it toward lower portion of screen */
+  height: 50vh; /* place it toward lower portion of screen */
   gap: 16px;
 }
 
@@ -36,7 +36,7 @@ button {
   border: none;
   padding: 10px 14px;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
 }
 
