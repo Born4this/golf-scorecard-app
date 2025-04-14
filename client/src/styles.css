@@ -1,3 +1,4 @@
+
 body {
   font-family: 'Helvetica Neue', sans-serif;
   margin: 0;
@@ -12,18 +13,21 @@ body {
   padding: 20px;
 }
 
-.centered-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 70vh;
-}
-
 h2 {
   font-size: 24px;
   margin-bottom: 16px;
   color: #2f6e43;
+  text-align: center;
+}
+
+/* For centering the name input on the first page */
+.initial-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70vh; /* place it toward lower portion of screen */
+  gap: 16px;
 }
 
 button {
@@ -34,7 +38,6 @@ button {
   font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
-  width: 100%;
 }
 
 button:hover {
@@ -42,15 +45,15 @@ button:hover {
 }
 
 input[type="text"] {
+  width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
-  width: 100%;
   box-sizing: border-box;
-  margin-bottom: 10px;
 }
 
+/* ✅ Only narrow the number inputs (used in scorecard) */
 input[type="number"] {
   width: 50px;
   padding: 6px;
