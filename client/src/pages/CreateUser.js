@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-// Hardcode the API URL
+// Hardcoded API URL
 const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 
 export default function CreateUser({ setUser }) {
@@ -16,7 +16,7 @@ export default function CreateUser({ setUser }) {
         isTemporary: true
       });
 
-      setUser(res.data); // pass user object to parent
+      setUser(res.data);
     } catch (err) {
       console.error(err);
       alert("Failed to create user");
@@ -24,17 +24,46 @@ export default function CreateUser({ setUser }) {
   };
 
   return (
-    <div className="container" style={{ marginTop: "20vh", textAlign: "center" }}>
+    <div style={{ paddingTop: "25vh", textAlign: "center" }}>
       <h2>Enter Your Name</h2>
-      <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "10px",
+          marginTop: 16,
+          flexWrap: "wrap"
+        }}
+      >
         <input
           type="text"
-          className="name-input"
           placeholder="e.g., Mike"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          style={{
+            padding: 10,
+            fontSize: 16,
+            borderRadius: 6,
+            border: "1px solid #ccc",
+            width: "220px",
+            maxWidth: "80vw"
+          }}
         />
-        <button onClick={handleCreate}>Continue</button>
+        <button
+          onClick={handleCreate}
+          style={{
+            padding: "10px 16px",
+            fontSize: 16,
+            background: "#2f6e43",
+            color: "white",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            whiteSpace: "nowrap"
+          }}
+        >
+          Continue
+        </button>
       </div>
     </div>
   );
