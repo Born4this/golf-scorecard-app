@@ -3,27 +3,44 @@ import CreateUser from "./pages/CreateUser";
 import JoinOrCreateGroup from "./pages/JoinOrCreateGroup";
 import Scorecard from "./pages/SC";
 
-// Hardcode the API URL
-const API_URL = "https://golf-scorecard-app-u07h.onrender.com"; // Replace with your actual Render backend URL
-
 function App() {
-  const [user, setUser] = useState(null);
-  const [group, setGroup] = useState(null);
+  // ✅ Restore user and group from localStorage if available
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [group, setGroup] = useState(() => {
+    const saved = localStorage.getItem("group");
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [scorecard, setScorecard] = useState(null);
+
+  // ✅ Persist user and group when they change
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (group) {
+      localStorage.setItem("group", JSON.stringify(group));
+    }
+  }, [group]);
 
   useEffect(() => {
     const fetchScorecard = async () => {
       if (!group || !user) return;
 
       try {
-        const res = await fetch(`${API_URL}/api/scores/${group._id}`);
-
+        const res = await fetch(`https://golf-scorecard-app-u07h.onrender.com/api/scores/${group._id}`);
         if (res.ok) {
           const data = await res.json();
           setScorecard(data);
         } else if (res.status === 404) {
-          // Scorecard doesn't exist — create it
-          const createRes = await fetch(`${API_URL}/api/scores`, {
+          const createRes = await fetch("https://golf-scorecard-app-u07h.onrender.com/api/scores", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -49,6 +66,14 @@ function App() {
     fetchScorecard();
   }, [group, user]);
 
+  // ✅ Reset everything manually if needed
+  const handleReset = () => {
+    localStorage.clear();
+    setUser(null);
+    setGroup(null);
+    setScorecard(null);
+  };
+
   if (!user) return <CreateUser setUser={setUser} />;
   if (!group) {
     return (
@@ -56,19 +81,24 @@ function App() {
         user={user}
         setGroup={(g) => {
           setGroup(g);
-          setScorecard(null); // force re-fetch when a new group is set
+          setScorecard(null); // force re-fetch
         }}
       />
     );
   }
 
   return (
-    <Scorecard
-      user={user}
-      group={group}
-      scorecard={scorecard}
-      setScorecard={setScorecard}
-    />
+    <>
+      <div style={{ textAlign: "right", padding: "0 16px" }}>
+        <button onClick={handleReset}>Reset</button>
+      </div>
+      <Scorecard
+        user={user}
+        group={group}
+        scorecard={scorecard}
+        setScorecard={setScorecard}
+      />
+    </>
   );
 }
 
