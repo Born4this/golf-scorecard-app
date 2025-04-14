@@ -33,17 +33,13 @@ button:hover {
 }
 
 input[type="text"] {
-  width: 100%;
-  max-width: 300px;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
-  box-sizing: border-box;
-  display: block;
-  margin-bottom: 10px;
 }
 
+/* ✅ Only narrow the number inputs (used in scorecard) */
 input[type="number"] {
   width: 50px;
   padding: 6px;
