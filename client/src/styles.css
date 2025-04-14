@@ -26,31 +26,28 @@ button {
   font-size: 14px;
   border-radius: 8px;
   cursor: pointer;
+  width: 100%;
+  max-width: 400px;
 }
 
 button:hover {
   background: #255733;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="number"] {
   width: 100%;
-  max-width: 100%;
+  max-width: 400px;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
-  box-sizing: border-box;
 }
 
-/* ✅ Only narrow the number inputs (used in scorecard) */
 input[type="number"] {
   width: 50px;
   padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
   text-align: center;
-  box-sizing: border-box;
 }
 
 table {
@@ -75,16 +72,4 @@ thead {
 tfoot {
   background: #f2f2f2;
   font-weight: bold;
-}
-
-/* Responsive input sizing for larger screens */
-@media (min-width: 600px) {
-  input[type="text"] {
-    max-width: 300px;
-  }
-
-  .centered-input {
-    display: flex;
-    justify-content: center;
-  }
 }
