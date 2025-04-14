@@ -32,12 +32,25 @@ button:hover {
   background: #255733;
 }
 
-input[type="text"],
-input[type="number"] {
+input[type="text"] {
+  width: 100%;
+  max-width: 300px;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
+  box-sizing: border-box;
+  display: block;
+  margin-bottom: 10px;
+}
+
+input[type="number"] {
+  width: 50px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
 }
 
 table {
