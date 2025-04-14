@@ -24,19 +24,17 @@ export default function CreateUser({ setUser }) {
   };
 
   return (
-    <div className="fullscreen-center" style={{ paddingTop: "10vh" }}>
-      <div style={{ padding: 20, textAlign: "center" }}>
-        <h2>Enter Your Name</h2>
+    <div className="container" style={{ marginTop: "20vh", textAlign: "center" }}>
+      <h2>Enter Your Name</h2>
+      <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
         <input
           type="text"
+          className="name-input"
           placeholder="e.g., Mike"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{ padding: 10, fontSize: 16 }}
         />
-        <button onClick={handleCreate} style={{ marginTop: 10, padding: 10 }}>
-          Continue
-        </button>
+        <button onClick={handleCreate}>Continue</button>
       </div>
     </div>
   );
