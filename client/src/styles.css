@@ -72,3 +72,11 @@ tfoot {
   background: #f2f2f2;
   font-weight: bold;
 }
+
+/* ✅ NEW: Center full-screen components like Enter Your Name */
+.fullscreen-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
