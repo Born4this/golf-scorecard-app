@@ -44,13 +44,6 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
   return (
     <div
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        backgroundImage: "url('/bg.jpg')",
-        backgroundSize: "cover",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "top center",
         height: "100dvh",
         width: "100vw",
         display: "flex",
@@ -58,13 +51,14 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
         alignItems: "flex-start",
         paddingTop: "14vh",
         overflow: "hidden",
-        zIndex: 0
+        zIndex: 0,
+        position: "relative"
       }}
     >
       {/* Bottom-right corner label */}
       <div
         style={{
-          position: "fixed",
+          position: "absolute",
           bottom: 12,
           right: 16,
           fontSize: "12px",
