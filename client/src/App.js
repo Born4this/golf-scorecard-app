@@ -67,13 +67,6 @@ function App() {
     fetchScorecard();
   }, [group, user]);
 
-  const handleReset = () => {
-    localStorage.clear();
-    setUser(null);
-    setGroup(null);
-    setScorecard(null);
-  };
-
   if (!user) {
     return (
       <CreateUser
@@ -101,9 +94,6 @@ function App() {
 
   return (
     <>
-      <div style={{ textAlign: "right", padding: "0 16px" }}>
-        <button onClick={handleReset}>Reset</button>
-      </div>
       <Scorecard
         user={user}
         group={group}
