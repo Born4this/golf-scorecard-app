@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 
 // Hardcode the API URL to bypass environment variable issues
 const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
-const FRONTEND_URL = "https://golf-scorecard-app.vercel.app"; // Add this for building invite links
+const FRONTEND_URL = "https://golf-scorecard-app.vercel.app";
 
 // Connect to your backend Socket.io server
 const socket = io(API_URL);
@@ -77,11 +77,9 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         borderRadius: 8,
         marginBottom: 16,
         border: "1px solid #ddd",
-        fontSize: 14
+        fontSize: 14,
+        textAlign: "center"
       }}>
-        <div style={{ marginBottom: 6 }}>
-          <strong>Group ID:</strong> {group._id}
-        </div>
         <button onClick={copyInviteLink}>
           Copy Invite Link
         </button>
