@@ -56,7 +56,7 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "flex-start",
-        paddingTop: "12vh",
+        paddingTop: "14vh",
         overflow: "hidden",
         zIndex: 0
       }}
