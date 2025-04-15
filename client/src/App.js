@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import CreateUser from "./pages/CreateUser";
 import JoinOrCreateGroup from "./pages/JoinOrCreateGroup";
 import Scorecard from "./pages/SC";
+import ViewScorecard from "./pages/ViewScorecard";
 import Layout from "./components/Format";
 
 function App() {
@@ -69,33 +71,43 @@ function App() {
   }, [group, user]);
 
   return (
-    <Layout>
-      {!user ? (
-        <CreateUser
-          setUser={setUser}
-          groupFromURL={groupFromURL}
-          setGroup={(g) => {
-            setGroup(g);
-            setScorecard(null);
-          }}
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Layout>
+              {!user ? (
+                <CreateUser
+                  setUser={setUser}
+                  groupFromURL={groupFromURL}
+                  setGroup={(g) => {
+                    setGroup(g);
+                    setScorecard(null);
+                  }}
+                />
+              ) : !group ? (
+                <JoinOrCreateGroup
+                  user={user}
+                  setGroup={(g) => {
+                    setGroup(g);
+                    setScorecard(null);
+                  }}
+                />
+              ) : (
+                <Scorecard
+                  user={user}
+                  group={group}
+                  scorecard={scorecard}
+                  setScorecard={setScorecard}
+                />
+              )}
+            </Layout>
+          }
         />
-      ) : !group ? (
-        <JoinOrCreateGroup
-          user={user}
-          setGroup={(g) => {
-            setGroup(g);
-            setScorecard(null);
-          }}
-        />
-      ) : (
-        <Scorecard
-          user={user}
-          group={group}
-          scorecard={scorecard}
-          setScorecard={setScorecard}
-        />
-      )}
-    </Layout>
+        <Route path="/scorecard/:groupId" element={<ViewScorecard />} />
+      </Routes>
+    </Router>
   );
 }
 

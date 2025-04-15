@@ -93,8 +93,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
               {Object.entries(scorecard.scores).map(([uid, scores]) => {
                 const isCurrentUser = uid === user._id;
                 const value = scores?.[holeIndex] ?? 0;
-                const inputClass =
-                  value > 0 ? "filled score-animated" : "";
+                const inputClass = value > 0 ? "filled score-animated" : "";
 
                 return (
                   <td key={uid}>
@@ -108,6 +107,11 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
                         onFocus={(e) => {
                           if (e.target.value === "0") {
                             e.target.value = "";
+                          }
+                        }}
+                        onBlur={(e) => {
+                          if (e.target.value === "") {
+                            updateScore(holeIndex, 0);
                           }
                         }}
                         onChange={(e) =>
