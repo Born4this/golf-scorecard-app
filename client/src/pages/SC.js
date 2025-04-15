@@ -13,35 +13,23 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
 
   useEffect(() => {
     socket.emit("joinGroup", group._id);
-
     socket.on("scorecardUpdated", (updated) => {
       setScorecard(updated);
     });
-
-    return () => {
-      socket.off("scorecardUpdated");
-    };
+    return () => socket.off("scorecardUpdated");
   }, [group._id, setScorecard]);
 
   useEffect(() => {
     const fetchUserNames = async () => {
       if (!scorecard || !scorecard.scores) return;
-
       const userIds = Object.keys(scorecard.scores);
-
       try {
-        const res = await axios.post(`${API_URL}/api/users/names`, {
-          userIds
-        });
-
-        if (res.status === 200) {
-          setUserNames(res.data);
-        }
+        const res = await axios.post(`${API_URL}/api/users/names`, { userIds });
+        if (res.status === 200) setUserNames(res.data);
       } catch (err) {
         console.error("❌ Error fetching user names:", err);
       }
     };
-
     fetchUserNames();
   }, [scorecard]);
 
@@ -68,11 +56,9 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     alert("Invite link copied to clipboard!");
   };
 
-  const userScores = scorecard.scores[user._id] ?? Array(18).fill(0);
-
   return (
     <div className="container">
-      <h2>{group.groupName}</h2>
+      <h2 className="fancy-heading">{group.groupName}</h2>
 
       <div style={{
         backgroundColor: "#f9f9f9",

@@ -95,3 +95,9 @@ tfoot {
 .name-input {
   width: 250px;
 }
+
+.fancy-heading {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
