@@ -1,0 +1,9 @@
+@keyframes scoreFade {
+    from { opacity: 0.4; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  .score-animated {
+    animation: scoreFade 0.2s ease-in-out;
+  }
+  

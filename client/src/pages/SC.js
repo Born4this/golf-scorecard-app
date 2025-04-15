@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
+import "../scorecard-style-additions.css"; // make sure to import if using separate file
 
-// Hardcode the API URL to bypass environment variable issues
 const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 const FRONTEND_URL = "https://golf-scorecard-app.vercel.app";
 
-// Connect to your backend Socket.io server
 const socket = io(API_URL);
 
 export default function Scorecard({ user, group, scorecard, setScorecard }) {
@@ -61,12 +60,6 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     }
   };
 
-  const copyInviteLink = () => {
-    const link = `${FRONTEND_URL}?group=${group._id}`;
-    navigator.clipboard.writeText(link);
-    alert("Invite link copied to clipboard!");
-  };
-
   return (
     <div className="container">
       <h2>{group.groupName}</h2>
@@ -80,7 +73,11 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         fontSize: 14,
         textAlign: "center"
       }}>
-        <button onClick={copyInviteLink}>
+        <button onClick={() => {
+          const link = `${FRONTEND_URL}?group=${group._id}`;
+          navigator.clipboard.writeText(link);
+          alert("Invite link copied to clipboard!");
+        }}>
           Copy Invite Link
         </button>
       </div>
@@ -101,28 +98,36 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
           {[...Array(18)].map((_, holeIndex) => (
             <tr key={holeIndex}>
               <td>H{holeIndex + 1}</td>
-              {Object.entries(scorecard.scores).map(([uid, scores]) => (
-                <td key={uid}>
-                  {uid === user._id ? (
-                    <input
-                      type="number"
-                      value={scores[holeIndex]}
-                      min="0"
-                      style={{ fontSize: 16 }}
-                      onFocus={(e) => {
-                        if (e.target.value === "0") {
-                          e.target.value = "";
+              {Object.entries(scorecard.scores).map(([uid, scores]) => {
+                const isCurrentUser = uid === user._id;
+                const value = scores[holeIndex];
+                const inputClass =
+                  value > 0 ? "filled score-animated" : "";
+
+                return (
+                  <td key={uid}>
+                    {isCurrentUser ? (
+                      <input
+                        type="number"
+                        value={value}
+                        min="0"
+                        className={inputClass}
+                        style={{ fontSize: 16 }}
+                        onFocus={(e) => {
+                          if (e.target.value === "0") {
+                            e.target.value = "";
+                          }
+                        }}
+                        onChange={(e) =>
+                          updateScore(holeIndex, Number(e.target.value))
                         }
-                      }}
-                      onChange={(e) =>
-                        updateScore(holeIndex, Number(e.target.value))
-                      }
-                    />
-                  ) : (
-                    scores[holeIndex]
-                  )}
-                </td>
-              ))}
+                      />
+                    ) : (
+                      value
+                    )}
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
