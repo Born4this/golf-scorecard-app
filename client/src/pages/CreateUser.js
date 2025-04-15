@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 
 export default function CreateUser({ setUser, groupFromURL, setGroup }) {
   const [name, setName] = useState("");
+
+  useEffect(() => {
+    // Lock scroll on mount
+    document.body.style.overflow = "hidden";
+    return () => {
+      // Restore scroll on unmount
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   const handleCreate = async () => {
     if (!name) return alert("Enter your name");
