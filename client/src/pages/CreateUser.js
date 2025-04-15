@@ -7,10 +7,8 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
   const [name, setName] = useState("");
 
   useEffect(() => {
-    // Lock scroll on mount
     document.body.style.overflow = "hidden";
     return () => {
-      // Restore scroll on unmount
       document.body.style.overflow = "auto";
     };
   }, []);
@@ -44,6 +42,9 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
   return (
     <div
       style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
         height: "100dvh",
         width: "100vw",
         display: "flex",
@@ -51,14 +52,13 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
         alignItems: "flex-start",
         paddingTop: "14vh",
         overflow: "hidden",
-        zIndex: 0,
-        position: "relative"
+        zIndex: 0
       }}
     >
       {/* Bottom-right corner label */}
       <div
         style={{
-          position: "absolute",
+          position: "fixed",
           bottom: 12,
           right: 16,
           fontSize: "12px",
@@ -72,7 +72,14 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
         A Michael Morris Project
       </div>
 
-      <div style={{ textAlign: "center", backgroundColor: "rgba(255, 255, 255, 0.85)", padding: 20, borderRadius: 12 }}>
+      <div
+        style={{
+          textAlign: "center",
+          backgroundColor: "rgba(255, 255, 255, 0.85)",
+          padding: 20,
+          borderRadius: 12
+        }}
+      >
         <h2>Enter Your Name</h2>
         <div
           style={{
