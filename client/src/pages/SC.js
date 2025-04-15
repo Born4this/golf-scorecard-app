@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
-import "../scorecard-style-additions.css"; // make sure to import if using separate file
+import "../scorecard-style-additions.css";
 
 const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 const FRONTEND_URL = "https://golf-scorecard-app.vercel.app";
@@ -45,7 +45,9 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     fetchUserNames();
   }, [scorecard]);
 
-  if (!scorecard) return <p>Loading scorecard...</p>;
+  if (!scorecard || !user || !group || !scorecard.scores[user._id]) {
+    return <p>Loading scorecard...</p>;
+  }
 
   const updateScore = async (holeIndex, strokes) => {
     try {
@@ -60,6 +62,14 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     }
   };
 
+  const copyInviteLink = () => {
+    const link = `${FRONTEND_URL}?group=${group._id}`;
+    navigator.clipboard.writeText(link);
+    alert("Invite link copied to clipboard!");
+  };
+
+  const userScores = scorecard.scores[user._id] ?? Array(18).fill(0);
+
   return (
     <div className="container">
       <h2>{group.groupName}</h2>
@@ -73,11 +83,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         fontSize: 14,
         textAlign: "center"
       }}>
-        <button onClick={() => {
-          const link = `${FRONTEND_URL}?group=${group._id}`;
-          navigator.clipboard.writeText(link);
-          alert("Invite link copied to clipboard!");
-        }}>
+        <button onClick={copyInviteLink}>
           Copy Invite Link
         </button>
       </div>
@@ -100,7 +106,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
               <td>H{holeIndex + 1}</td>
               {Object.entries(scorecard.scores).map(([uid, scores]) => {
                 const isCurrentUser = uid === user._id;
-                const value = scores[holeIndex];
+                const value = scores?.[holeIndex] ?? 0;
                 const inputClass =
                   value > 0 ? "filled score-animated" : "";
 
