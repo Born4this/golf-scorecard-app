@@ -1,8 +1,8 @@
 
 /* Highlight filled inputs */
 input[type="number"].filled {
-    background-color: #e4efe8;
-    border-color: #006aff42;
+    background-color: #006aff5a;
+    border-color: #006aff5a;
     transition: background-color 0.3s ease, border-color 0.3s ease;
   }
   
