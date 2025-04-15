@@ -45,7 +45,7 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
         display: "flex",
         justifyContent: "center",
         alignItems: "flex-start",
-        paddingTop: "12vh"
+        paddingTop: "18vh"
       }}
     >
       <div style={{ textAlign: "center", backgroundColor: "rgba(255, 255, 255, 0.85)", padding: 20, borderRadius: 12 }}>
