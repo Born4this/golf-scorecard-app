@@ -4,7 +4,7 @@ import axios from "axios";
 // Hardcoded API URL
 const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 
-export default function CreateUser({ setUser }) {
+export default function CreateUser({ setUser, groupFromURL, setGroup }) {
   const [name, setName] = useState("");
 
   const handleCreate = async () => {
@@ -16,7 +16,17 @@ export default function CreateUser({ setUser }) {
         isTemporary: true
       });
 
-      setUser(res.data);
+      const createdUser = res.data;
+      setUser(createdUser);
+
+      if (groupFromURL) {
+        const joinRes = await axios.post(`${API_URL}/api/groups/join`, {
+          groupId: groupFromURL,
+          userId: createdUser._id
+        });
+
+        setGroup(joinRes.data.group);
+      }
     } catch (err) {
       console.error(err);
       alert("Failed to create user");

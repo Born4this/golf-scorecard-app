@@ -4,7 +4,6 @@ import JoinOrCreateGroup from "./pages/JoinOrCreateGroup";
 import Scorecard from "./pages/SC";
 
 function App() {
-  // ✅ Restore user and group from localStorage if available
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
@@ -17,7 +16,9 @@ function App() {
 
   const [scorecard, setScorecard] = useState(null);
 
-  // ✅ Persist user and group when they change
+  const params = new URLSearchParams(window.location.search);
+  const groupFromURL = params.get("group");
+
   useEffect(() => {
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
@@ -66,7 +67,6 @@ function App() {
     fetchScorecard();
   }, [group, user]);
 
-  // ✅ Reset everything manually if needed
   const handleReset = () => {
     localStorage.clear();
     setUser(null);
@@ -74,7 +74,19 @@ function App() {
     setScorecard(null);
   };
 
-  if (!user) return <CreateUser setUser={setUser} />;
+  if (!user) {
+    return (
+      <CreateUser
+        setUser={setUser}
+        groupFromURL={groupFromURL}
+        setGroup={(g) => {
+          setGroup(g);
+          setScorecard(null); // reset scorecard for fresh user
+        }}
+      />
+    );
+  }
+
   if (!group) {
     return (
       <JoinOrCreateGroup
