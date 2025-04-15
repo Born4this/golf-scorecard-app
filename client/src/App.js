@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import CreateUser from "./pages/CreateUser";
 import JoinOrCreateGroup from "./pages/JoinOrCreateGroup";
 import Scorecard from "./pages/SC";
+import Layout from "./components/Layout";
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -67,40 +68,34 @@ function App() {
     fetchScorecard();
   }, [group, user]);
 
-  if (!user) {
-    return (
-      <CreateUser
-        setUser={setUser}
-        groupFromURL={groupFromURL}
-        setGroup={(g) => {
-          setGroup(g);
-          setScorecard(null); // reset scorecard for fresh user
-        }}
-      />
-    );
-  }
-
-  if (!group) {
-    return (
-      <JoinOrCreateGroup
-        user={user}
-        setGroup={(g) => {
-          setGroup(g);
-          setScorecard(null); // force re-fetch
-        }}
-      />
-    );
-  }
-
   return (
-    <>
-      <Scorecard
-        user={user}
-        group={group}
-        scorecard={scorecard}
-        setScorecard={setScorecard}
-      />
-    </>
+    <Layout>
+      {!user ? (
+        <CreateUser
+          setUser={setUser}
+          groupFromURL={groupFromURL}
+          setGroup={(g) => {
+            setGroup(g);
+            setScorecard(null);
+          }}
+        />
+      ) : !group ? (
+        <JoinOrCreateGroup
+          user={user}
+          setGroup={(g) => {
+            setGroup(g);
+            setScorecard(null);
+          }}
+        />
+      ) : (
+        <Scorecard
+          user={user}
+          group={group}
+          scorecard={scorecard}
+          setScorecard={setScorecard}
+        />
+      )}
+    </Layout>
   );
 }
 
