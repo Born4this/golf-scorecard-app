@@ -36,17 +36,16 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
     <div
       style={{
         backgroundImage: "url('/bg.jpg')",
-        backgroundSize: "contain",
+        backgroundSize: "cover",
         backgroundRepeat: "no-repeat",
         backgroundPosition: "top center",
-        backgroundColor: "#f5f8f3",
-        height: "100vh",
+        height: "100dvh",
         width: "100vw",
+        overflow: "hidden",
         display: "flex",
-        alignItems: "flex-start",
         justifyContent: "center",
-        paddingTop: "18vh",
-        overflow: "hidden"
+        alignItems: "flex-start",
+        paddingTop: "8vh"
       }}
     >
       <div style={{ textAlign: "center", backgroundColor: "rgba(255, 255, 255, 0.85)", padding: 20, borderRadius: 12 }}>
