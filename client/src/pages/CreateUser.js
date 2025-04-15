@@ -61,6 +61,22 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
         zIndex: 0
       }}
     >
+      {/* Bottom-right corner label */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 12,
+          right: 16,
+          fontSize: "12px",
+          color: "#ffffff",
+          backgroundColor: "rgba(0, 0, 0, 0.4)",
+          padding: "4px 8px",
+          borderRadius: "8px"
+        }}
+      >
+        A Michael Morris Project
+      </div>
+
       <div style={{ textAlign: "center", backgroundColor: "rgba(255, 255, 255, 0.85)", padding: 20, borderRadius: 12 }}>
         <h2>Enter Your Name</h2>
         <div
