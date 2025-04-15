@@ -64,14 +64,15 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
       {/* Bottom-right corner label */}
       <div
         style={{
-          position: "absolute",
+          position: "fixed",
           bottom: 12,
           right: 16,
           fontSize: "12px",
           color: "#ffffff",
           backgroundColor: "rgba(0, 0, 0, 0.4)",
           padding: "4px 8px",
-          borderRadius: "8px"
+          borderRadius: "8px",
+          zIndex: 1
         }}
       >
         A Michael Morris Project
