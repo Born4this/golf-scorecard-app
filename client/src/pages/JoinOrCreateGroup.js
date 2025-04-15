@@ -60,7 +60,7 @@ export default function JoinOrCreateGroup({ user, setGroup }) {
           placeholder="e.g., Team A"
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
-          style={{ width: "100%", padding: 8, marginBottom: 10 }}
+          style={{ width: "100%", padding: 8, marginBottom: 10, fontSize: 16 }}
         />
         <button onClick={createGroup} style={{ width: "100%", padding: 10 }}>
           Create Group
@@ -74,7 +74,7 @@ export default function JoinOrCreateGroup({ user, setGroup }) {
           placeholder="Enter Group ID"
           value={joinGroupId}
           onChange={(e) => setJoinGroupId(e.target.value)}
-          style={{ width: "100%", padding: 8, marginBottom: 10 }}
+          style={{ width: "100%", padding: 8, marginBottom: 10, fontSize: 16 }}
         />
         <button onClick={joinGroup} style={{ width: "100%", padding: 10 }}>
           Join Group

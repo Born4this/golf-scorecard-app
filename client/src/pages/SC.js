@@ -108,6 +108,9 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
                       type="number"
                       value={scores[holeIndex]}
                       min="0"
+                      style={{
+                        fontSize: 16
+                      }}
                       onChange={(e) =>
                         updateScore(holeIndex, Number(e.target.value))
                       }
