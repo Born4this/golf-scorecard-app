@@ -51,7 +51,7 @@ export default function JoinOrCreateGroup({ user, setGroup }) {
 
   return (
     <div style={{ padding: 20, maxWidth: 400, margin: "0 auto", fontFamily: "sans-serif" }}>
-      <h2 className="fancy-heading">Welcome, {user.name}</h2>
+      <h2>Welcome, {user.name}</h2>
 
       <div style={{ marginBottom: 30 }}>
         <h3>Create a New Group</h3>

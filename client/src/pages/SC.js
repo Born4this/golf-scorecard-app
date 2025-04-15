@@ -58,7 +58,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
 
   return (
     <div className="container">
-      <h2 className="fancy-heading">{group.groupName}</h2>
+      <h2 className="scorecard-heading">{group.groupName}</h2>
 
       <div style={{
         backgroundColor: "#f9f9f9",

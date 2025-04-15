@@ -12,9 +12,11 @@ code {
     monospace;
 }
 
-.fancy-heading {
-  font-family: 'Raleway', sans-serif;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+.scorecard-heading {
+  font-family: 'Alumni Sans Inline One', sans-serif;
+  font-size: 28px;
+  font-weight: 400;
   color: #2f6e43;
+  letter-spacing: 0.5px;
+  text-align: center;
 }
