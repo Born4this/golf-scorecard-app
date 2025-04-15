@@ -111,7 +111,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
                       style={{ fontSize: 16 }}
                       onFocus={(e) => {
                         if (e.target.value === "0") {
-                          e.target.select();
+                          e.target.value = "";
                         }
                       }}
                       onChange={(e) =>
