@@ -37,7 +37,7 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
       style={{
         backgroundImage: "url('/bg.jpg')",
         backgroundSize: "cover",
-        backgroundPosition: "center -50px",
+        backgroundPosition: "cover",
         height: "100vh",
         width: "100vw",
         display: "flex",
