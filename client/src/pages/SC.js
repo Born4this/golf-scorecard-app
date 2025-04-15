@@ -134,6 +134,26 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
           </tr>
         </tfoot>
       </table>
+
+      <div style={{ marginTop: 40, textAlign: "center" }}>
+        <button
+          onClick={() => {
+            localStorage.clear();
+            window.location.href = "/";
+          }}
+          style={{
+            backgroundColor: "#ccc",
+            color: "#333",
+            padding: "10px 16px",
+            fontSize: 14,
+            borderRadius: 10,
+            border: "none",
+            cursor: "pointer"
+          }}
+        >
+          Leave Group
+        </button>
+      </div>
     </div>
   );
 }
