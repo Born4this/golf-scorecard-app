@@ -48,7 +48,7 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
         paddingTop: "8vh"
       }}
     >
-      <div style={{ textAlign: "center", backgroundColor: "rgba(255, 255, 255, 0.85)", padding: 20, borderRadius: 12 }}>
+      <div style={{ textAlign: "center", backgroundColor: "rgba(255, 255, 255, 0.85)", padding: 25, borderRadius: 12 }}>
         <h2>Enter Your Name</h2>
         <div
           style={{
