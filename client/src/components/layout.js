@@ -1,3 +1,5 @@
+// /client/src/components/Layout.js
+
 export default function Layout({ children }) {
     return (
       <div
@@ -6,7 +8,7 @@ export default function Layout({ children }) {
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "top center",
-          minHeight: "100vh",
+          minHeight: "100dvh",
           width: "100vw",
           overflowX: "hidden"
         }}
