@@ -58,20 +58,32 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
 
   return (
     <div className="container">
+      {/* Banner with group name overlay */}
       <div style={{ position: "relative", width: "100%", maxHeight: "250px", overflow: "hidden", marginBottom: "20px" }}>
         <img
-          src="/scroll.png"
-          alt="Scorecard Background"
+          src="/scorecard-banner.png" // Make sure to save your converted PNG in public folder
+          alt="Scorecard Banner"
           style={{ width: "100%", objectFit: "cover", maxHeight: "250px", display: "block" }}
         />
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.85))",
+          zIndex: 1
+        }} />
         <h2 style={{
           position: "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          color: "#fff",
-          textShadow: "0 1px 3px rgba(0,0,0,0.8)",
-          fontSize: "2rem",
+          color: "#007bff",
+          zIndex: 2,
+          fontSize: "2.5rem",
+          fontWeight: "bold",
+          textShadow: "0 2px 6px rgba(0,0,0,0.7)",
           textAlign: "center",
           margin: 0
         }}>
@@ -79,24 +91,25 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         </h2>
       </div>
 
-      <div style={{ marginBottom: 16, textAlign: "center" }}>
+      {/* Copy Invite Button */}
+      <div style={{ textAlign: "center", marginBottom: 16 }}>
         <button
           onClick={copyInviteLink}
           style={{
             backgroundColor: "#007bff",
-            color: "#fff",
-            padding: "8px 16px",
-            fontSize: "14px",
-            borderRadius: "8px",
+            color: "white",
+            padding: "8px 14px",
+            borderRadius: 8,
             border: "none",
-            cursor: "pointer",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+            fontSize: 14,
+            cursor: "pointer"
           }}
         >
           Copy Invite Link
         </button>
       </div>
 
+      {/* Scorecard Table */}
       <table>
         <thead>
           <tr>
@@ -163,6 +176,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         </tfoot>
       </table>
 
+      {/* Leave Group Button */}
       <div style={{ marginTop: 40, textAlign: "center" }}>
         <button
           onClick={() => {
