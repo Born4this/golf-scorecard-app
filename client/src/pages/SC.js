@@ -58,7 +58,26 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
 
   return (
     <div className="container">
-      <h2>{group.groupName}</h2>
+      <div style={{ position: "relative", width: "100%", maxHeight: "250px", overflow: "hidden", marginBottom: "20px" }}>
+        <img
+          src="/maybe.avif"
+          alt="Scorecard Background"
+          style={{ width: "100%", objectFit: "cover", maxHeight: "250px", display: "block" }}
+        />
+        <h2 style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          color: "#fff",
+          textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+          fontSize: "2rem",
+          textAlign: "center",
+          margin: 0
+        }}>
+          {group.groupName}
+        </h2>
+      </div>
 
       <div style={{ marginBottom: 16, textAlign: "center" }}>
         <button
