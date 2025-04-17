@@ -7,12 +7,21 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 
-// ✅ Allow only Vercel frontend
-const allowedOrigin = "https://golf-scorecard-app.vercel.app";
+// ✅ Allow both Vercel and your custom domain
+const allowedOrigins = [
+  "https://golf-scorecard-app.vercel.app",
+  "https://yourcustomdomain.com" // 👈 Replace with your real domain
+];
 
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PATCH"],
     credentials: true
   })
@@ -24,7 +33,13 @@ app.use(express.json());
 const { Server } = require("socket.io");
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigin,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PATCH"],
     credentials: true
   }
