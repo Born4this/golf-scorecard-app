@@ -10,7 +10,7 @@ const server = http.createServer(app);
 // ✅ Allow both Vercel and your custom domain
 const allowedOrigins = [
   "https://golf-scorecard-app.vercel.app",
-  "https://yourcustomdomain.com" // 👈 Replace with your real domain
+  "live-scorecard.com" // 👈 Replace with your real domain
 ];
 
 app.use(
