@@ -60,7 +60,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     <div className="container">
       <div style={{ position: "relative", width: "100%", maxHeight: "250px", overflow: "hidden", marginBottom: "20px" }}>
         <img
-          src="/maybe.avif"
+          src="/scroll.png"
           alt="Scorecard Background"
           style={{ width: "100%", objectFit: "cover", maxHeight: "250px", display: "block" }}
         />
