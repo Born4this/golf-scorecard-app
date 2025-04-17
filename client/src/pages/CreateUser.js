@@ -69,7 +69,7 @@ export default function CreateUser({ setUser, groupFromURL, setGroup }) {
           zIndex: 1
         }}
       >
-        A Michael Morris Project
+        Created by Michael Morris
       </div>
 
       <div
