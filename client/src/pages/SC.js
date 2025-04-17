@@ -33,6 +33,18 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     fetchUserNames();
   }, [scorecard]);
 
+  // Fix: handle browser tab refocus for input usability
+  useEffect(() => {
+    const handleFocus = () => {
+      document.querySelectorAll("input[type='number']").forEach((input) => {
+        input.blur();
+      });
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, []);
+
   if (!scorecard || !user || !group || !scorecard.scores[user._id]) {
     return <p>Loading scorecard...</p>;
   }
@@ -104,6 +116,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
                     {isCurrentUser ? (
                       <input
                         type="number"
+                        tabIndex="0"
                         value={value}
                         min="0"
                         className={inputClass}
