@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import "../scorecard-style-additions.css";
 
 const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
-const FRONTEND_URL = "https://golf-scorecard-app.vercel.app";
+const FRONTEND_URL = "https://live-scorecard.com";
 
 const socket = io(API_URL);
 
