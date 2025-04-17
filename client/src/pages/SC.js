@@ -60,16 +60,20 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     <div className="container">
       <h2>{group.groupName}</h2>
 
-      <div style={{
-        backgroundColor: "#f9f9f9",
-        padding: 10,
-        borderRadius: 8,
-        marginBottom: 16,
-        border: "1px solid #ddd",
-        fontSize: 14,
-        textAlign: "center"
-      }}>
-        <button onClick={copyInviteLink}>
+      <div style={{ marginBottom: 16, textAlign: "center" }}>
+        <button
+          onClick={copyInviteLink}
+          style={{
+            backgroundColor: "#007bff",
+            color: "#fff",
+            padding: "8px 16px",
+            fontSize: "14px",
+            borderRadius: "8px",
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+          }}
+        >
           Copy Invite Link
         </button>
       </div>
@@ -89,7 +93,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         <tbody>
           {[...Array(18)].map((_, holeIndex) => (
             <tr key={holeIndex}>
-              <td>H{holeIndex + 1}</td>
+              <td>{holeIndex + 1}</td>
               {Object.entries(scorecard.scores).map(([uid, scores]) => {
                 const isCurrentUser = uid === user._id;
                 const value = scores?.[holeIndex] ?? 0;
