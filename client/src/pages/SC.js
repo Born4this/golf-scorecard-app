@@ -58,19 +58,20 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
 
   return (
     <div className="container">
-      <h2 style={{ color: "#007bff" }}>{group.groupName}</h2>
+      <h2>{group.groupName}</h2>
 
-      <div style={{ textAlign: "center", marginBottom: 8 }}>
+      <div style={{ marginBottom: 16, textAlign: "center" }}>
         <button
           onClick={copyInviteLink}
           style={{
             backgroundColor: "#007bff",
-            color: "white",
-            padding: "8px 14px",
-            borderRadius: 8,
+            color: "#fff",
+            padding: "8px 16px",
+            fontSize: "14px",
+            borderRadius: "8px",
             border: "none",
-            fontSize: 14,
-            cursor: "pointer"
+            cursor: "pointer",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
           }}
         >
           Copy Invite Link
@@ -165,4 +166,3 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     </div>
   );
 }
-
