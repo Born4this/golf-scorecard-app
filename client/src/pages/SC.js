@@ -61,7 +61,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
       {/* Banner with group name overlay */}
       <div style={{ position: "relative", width: "100%", maxHeight: "250px", overflow: "hidden", marginBottom: "20px" }}>
         <img
-          src="/scorecard-banner.png" // Make sure to save your converted PNG in public folder
+          src="/scroll.png" // Make sure to save your converted PNG in public folder
           alt="Scorecard Banner"
           style={{ width: "100%", objectFit: "cover", maxHeight: "250px", display: "block" }}
         />
