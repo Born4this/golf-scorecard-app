@@ -58,41 +58,9 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
 
   return (
     <div className="container">
-      {/* Banner with group name overlay */}
-      <div style={{ position: "relative", width: "100%", maxHeight: "250px", overflow: "hidden", marginBottom: "20px" }}>
-        <img
-          src="/scroll.png" // Make sure to save your converted PNG in public folder
-          alt="Scorecard Banner"
-          style={{ width: "100%", objectFit: "cover", maxHeight: "250px", display: "block" }}
-        />
-        <div style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.85))",
-          zIndex: 1
-        }} />
-        <h2 style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          color: "#007bff",
-          zIndex: 2,
-          fontSize: "2.5rem",
-          fontWeight: "bold",
-          textShadow: "0 2px 6px rgba(0,0,0,0.7)",
-          textAlign: "center",
-          margin: 0
-        }}>
-          {group.groupName}
-        </h2>
-      </div>
+      <h2 style={{ color: "#007bff" }}>{group.groupName}</h2>
 
-      {/* Copy Invite Button */}
-      <div style={{ textAlign: "center", marginBottom: 16 }}>
+      <div style={{ textAlign: "center", marginBottom: 8 }}>
         <button
           onClick={copyInviteLink}
           style={{
@@ -109,7 +77,6 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         </button>
       </div>
 
-      {/* Scorecard Table */}
       <table>
         <thead>
           <tr>
@@ -176,7 +143,6 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         </tfoot>
       </table>
 
-      {/* Leave Group Button */}
       <div style={{ marginTop: 40, textAlign: "center" }}>
         <button
           onClick={() => {
@@ -199,3 +165,4 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     </div>
   );
 }
+
