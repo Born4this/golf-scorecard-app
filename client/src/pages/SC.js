@@ -12,11 +12,25 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
   const [userNames, setUserNames] = useState({});
 
   useEffect(() => {
-    socket.emit("joinGroup", group._id);
+    const join = () => socket.emit("joinGroup", group._id);
+    join();
+
     socket.on("scorecardUpdated", (updated) => {
       setScorecard(updated);
     });
-    return () => socket.off("scorecardUpdated");
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        join();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      socket.off("scorecardUpdated");
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [group._id, setScorecard]);
 
   useEffect(() => {
@@ -32,18 +46,6 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     };
     fetchUserNames();
   }, [scorecard]);
-
-  // Fix: handle browser tab refocus for input usability
-  useEffect(() => {
-    const handleFocus = () => {
-      document.querySelectorAll("input[type='number']").forEach((input) => {
-        input.blur();
-      });
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
-  }, []);
 
   if (!scorecard || !user || !group || !scorecard.scores[user._id]) {
     return <p>Loading scorecard...</p>;
