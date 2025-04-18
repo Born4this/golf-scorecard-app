@@ -50,7 +50,7 @@ function App() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               groupId: group._id,
-              users: group.users.map(u => typeof u === "string" ? u : u._id) // ✅ Normalize
+              users: group.users
             })
           });
 
@@ -95,7 +95,7 @@ function App() {
                     setScorecard(null);
                   }}
                 />
-              ) : group.gameType === "bestball" && !user.team ? (
+              ) : group.gameType === "bestball" && !user.team && group.users.length > 1 ? (
                 <SelectTeam user={user} group={group} setGroup={setGroup} />
               ) : (
                 <Scorecard
