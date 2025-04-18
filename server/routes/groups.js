@@ -39,6 +39,7 @@ module.exports = (io) => {
           if (sc && !sc.scores.has(userId.toString())) {
             sc.scores.set(userId.toString(), new Array(18).fill(0));
             await sc.save();
+            io.to(groupId).emit("scorecardUpdated", sc);  // broadcast update
           }
         }
       }
@@ -60,7 +61,7 @@ module.exports = (io) => {
       if (group.gameType !== "bestball")
         return res.status(400).json({ message: "Not a best‑ball game" });
 
-      // 1️⃣  Update the user's team on their record
+      // 1️⃣ Update the user's team field
       const user = await User.findByIdAndUpdate(
         userId,
         { team },
@@ -68,21 +69,21 @@ module.exports = (io) => {
       );
       if (!user) return res.status(404).json({ message: "User not found" });
 
-      // 2️⃣  Make sure they’re in the group
+      // 2️⃣ Ensure they're in the group
       if (!group.users.map(String).includes(userId)) {
         group.users.push(userId);
         await group.save();
       }
 
-      // 3️⃣  Re‑fetch the group with populated users
+      // 3️⃣ Re-fetch the populated group
       const populated = await Group.findById(groupId).populate("users");
 
-      // 4️⃣  **Patch the Scorecard**: one column per actual team
+      // 4️⃣ Patch the Scorecard: one column per actual team
       const sc = await Scorecard.findOne({ groupId });
       if (sc) {
         const teams = [
           ...new Set(
-            populated.users.map((u) => u.team).filter((t) => Boolean(t))
+            populated.users.map((u) => u.team).filter(Boolean)
           ),
         ];
         teams.forEach((t) => {
@@ -91,10 +92,10 @@ module.exports = (io) => {
           }
         });
         await sc.save();
+        // broadcast both group and scorecard updates
+        io.to(groupId).emit("groupUpdated", populated);
+        io.to(groupId).emit("scorecardUpdated", sc);
       }
-
-      // 5️⃣  Broadcast updated group to all connected clients
-      io.to(groupId).emit("groupUpdated", populated);
 
       return res.json({ group: populated });
     } catch (err) {
