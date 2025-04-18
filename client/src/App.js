@@ -13,27 +13,19 @@ import Scorecard         from "./pages/SC";
 import ViewScorecard     from "./pages/ViewScorecard";
 import Layout            from "./components/Format";
 
-const API_URL = "https://golf-scorecard-app-u07h.onrender.com"; // for scorecard fetch
+const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 
 function App() {
-  /* -------------------------------------------------------------------- */
-  /*  State                                                                */
-  /* -------------------------------------------------------------------- */
   const [user,  setUser]  = useState(() => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   });
-
   const [group, setGroup] = useState(() => {
     const saved = localStorage.getItem("group");
     return saved ? JSON.parse(saved) : null;
   });
-
   const [scorecard, setScorecard] = useState(null);
 
-  /* -------------------------------------------------------------------- */
-  /*  Persist user / group to localStorage                                */
-  /* -------------------------------------------------------------------- */
   useEffect(() => {
     if (user)  localStorage.setItem("user",  JSON.stringify(user));
   }, [user]);
@@ -42,71 +34,45 @@ function App() {
     if (group) localStorage.setItem("group", JSON.stringify(group));
   }, [group]);
 
-  /* -------------------------------------------------------------------- */
-  /*  Keep user.team in sync after group updates                          */
-  /* -------------------------------------------------------------------- */
+  // keep user.team in sync if group.users changes
   useEffect(() => {
     if (!group || !user) return;
-    console.log("📦 group.users:", group.users);
-
-
-    const matched = group.users?.find(
-      (u) => u._id?.toString() === user._id
-    );
-
-    if (matched && matched.team && matched.team !== user.team) {
-      setUser((prev) => ({ ...prev, team: matched.team }));
+    const me = group.users.find((u) => u._id?.toString() === user._id);
+    if (me?.team && me.team !== user.team) {
+      setUser((u) => ({ ...u, team: me.team }));
     }
   }, [group, user]);
 
-  /* -------------------------------------------------------------------- */
-  /*  Fetch / create scorecard when user + group are ready                */
-  /* -------------------------------------------------------------------- */
+  // fetch or create the scorecard once we have both user+group
   useEffect(() => {
-    const fetchScorecard = async () => {
-      if (!group || !user) return;
-
+    if (!user || !group) return;
+    const fn = async () => {
       try {
         const res = await fetch(`${API_URL}/api/scores/${group._id}`);
-
         if (res.ok) {
           setScorecard(await res.json());
         } else if (res.status === 404) {
-          // none yet – create a fresh one
           const createRes = await fetch(`${API_URL}/api/scores`, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify({
+            body: JSON.stringify({
               groupId: group._id,
-              users:   group.users.map((u) => (typeof u === "object" ? u._id : u)),
+              users: group.users.map((u) => (typeof u === "object" ? u._id : u)),
             }),
           });
-
-          if (createRes.ok) {
-            setScorecard(await createRes.json());
-          } else {
-            console.warn("⚠️ Could not create scorecard");
-          }
-        } else {
-          console.warn(`⚠️ Unexpected response fetching scorecard: ${res.status}`);
+          if (createRes.ok) setScorecard(await createRes.json());
         }
       } catch (err) {
-        console.error("❌ Error checking/creating scorecard:", err);
+        console.error(err);
       }
     };
+    fn();
+  }, [user, group]);
 
-    fetchScorecard();
-  }, [group, user]);
+  // parse ?group=… invite‐link
+  const params       = new URLSearchParams(window.location.search);
+  const groupFromURL = params.get("group");
 
-  /* -------------------------------------------------------------------- */
-  /*  Invite‑link support                                                 */
-  /* -------------------------------------------------------------------- */
-  const params        = new URLSearchParams(window.location.search);
-  const groupFromURL  = params.get("group");
-
-  /* -------------------------------------------------------------------- */
-  /*  Routing                                                             */
-  /* -------------------------------------------------------------------- */
   return (
     <Router>
       <Routes>
@@ -114,7 +80,12 @@ function App() {
           path="/"
           element={
             <Layout>
-              {/* 1️⃣  CREATE USER */}
+              {/*
+                1️⃣ If we don’t have a user yet → CreateUser
+                2️⃣ Else if we have a user but no group → JoinOrCreateGroup
+                3️⃣ Else if this is Best‑Ball AND this user has no team → SelectTeam
+                4️⃣ Otherwise → Show the live Scorecard
+              */}
               {!user ? (
                 <CreateUser
                   setUser={setUser}
@@ -124,8 +95,7 @@ function App() {
                     setScorecard(null);
                   }}
                 />
-              ) : /* 2️⃣  CHOOSE / JOIN GROUP */
-              !group ? (
+              ) : !group ? (
                 <JoinOrCreateGroup
                   user={user}
                   setGroup={(g) => {
@@ -133,17 +103,13 @@ function App() {
                     setScorecard(null);
                   }}
                 />
-              ) : /* 3️⃣  BEST BALL – CHOOSE TEAM */
-              group.gameType === "bestball" &&
-              !user.team &&
-              group.users.length > 1 ? (
+              ) : group.gameType === "bestball" && !user.team ? (
                 <SelectTeam
                   user={user}
                   group={group}
                   setGroup={setGroup}
                 />
-              ) : /* 4️⃣  SCORECARD */
-              (
+              ) : (
                 <Scorecard
                   user={user}
                   group={group}
@@ -155,7 +121,7 @@ function App() {
           }
         />
 
-        {/* Public / read‑only scorecard share link */}
+        {/* public read‑only share link */}
         <Route path="/scorecard/:groupId" element={<ViewScorecard />} />
       </Routes>
     </Router>
