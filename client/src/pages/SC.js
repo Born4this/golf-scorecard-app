@@ -1,4 +1,3 @@
-// client/src/pages/SC.js
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -12,7 +11,7 @@ const socket = io(API_URL);
 export default function Scorecard({ user, group, scorecard, setScorecard }) {
   const [userNames, setUserNames] = useState({});
 
-  // Join the socket room and listen for updates
+  // Join Socket.io room and listen for updates
   useEffect(() => {
     const join = () => socket.emit("joinGroup", group._id);
     join();
@@ -24,10 +23,9 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     };
   }, [group._id, setScorecard]);
 
-  // Fetch names only when in STANDARD mode (team names are the headers in BEST‑BALL)
+  // Fetch player names only in standard mode
   useEffect(() => {
-    if (!scorecard || !scorecard.scores) return;
-    // In standard play, the keys are userIds, so we map them to names
+    if (!scorecard || !group) return;
     if (group.gameType === "standard") {
       const userIds = Object.keys(scorecard.scores);
       axios
@@ -35,9 +33,9 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         .then((res) => setUserNames(res.data))
         .catch((err) => console.error("❌ Error fetching user names:", err));
     }
-  }, [scorecard, group.gameType]);
+  }, [scorecard, group]);
 
-  // iOS blur‑on‑focus fix
+  // Blur inputs on window focus (iOS fix)
   useEffect(() => {
     const handleFocus = () => {
       document.querySelectorAll("input[type='number']").forEach((i) => i.blur());
@@ -46,18 +44,23 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
-  // Loading guard: only proceed when your column exists
+  // Only render when this user or their team has a column
   const hasOwnColumn = () => {
     if (!scorecard || !user || !group) return false;
     if (group.gameType === "bestball") {
       return !!scorecard.scores[user.team];
-    } else {
-      return !!scorecard.scores[user._id];
     }
+    return !!scorecard.scores[user._id];
   };
   if (!hasOwnColumn()) {
     return <p>Loading scorecard...</p>;
   }
+
+  // Determine columns: team names in bestball, userIds in standard
+  const columns =
+    group.gameType === "bestball"
+      ? [...new Set(group.users.map((u) => u.team).filter(Boolean))]
+      : Object.keys(scorecard.scores);
 
   const updateScore = async (holeIndex, strokes) => {
     try {
@@ -92,7 +95,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
             borderRadius: "8px",
             border: "none",
             cursor: "pointer",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
           }}
         >
           Copy Invite Link
@@ -103,10 +106,10 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         <thead>
           <tr>
             <th style={{ textAlign: "center" }}>Hole</th>
-            {Object.keys(scorecard.scores).map((key) => (
+            {columns.map((key) => (
               <th key={key}>
                 {group.gameType === "bestball"
-                  ? key                /* team name */
+                  ? key
                   : key === user._id
                   ? "You"
                   : userNames[key] || "Player"}
@@ -119,8 +122,8 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
           {Array.from({ length: 18 }, (_, holeIndex) => (
             <tr key={holeIndex}>
               <td>{holeIndex + 1}</td>
-              {Object.entries(scorecard.scores).map(([key, scores]) => {
-                const value = scores[holeIndex] ?? 0;
+              {columns.map((key) => {
+                const value = scorecard.scores[key]?.[holeIndex] ?? 0;
                 const isEditable =
                   group.gameType === "bestball"
                     ? key === user.team
@@ -141,9 +144,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
                         onBlur={(e) => {
                           if (e.target.value === "") updateScore(holeIndex, 0);
                         }}
-                        onChange={(e) =>
-                          updateScore(holeIndex, Number(e.target.value))
-                        }
+                        onChange={(e) => updateScore(holeIndex, Number(e.target.value))}
                       />
                     ) : (
                       value
@@ -158,8 +159,8 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         <tfoot>
           <tr>
             <td>Total</td>
-            {Object.values(scorecard.scores).map((scores, idx) => (
-              <td key={idx}>{scores.reduce((sum, s) => sum + s, 0)}</td>
+            {columns.map((key) => (
+              <td key={key}>{scorecard.scores[key].reduce((sum, s) => sum + s, 0)}</td>
             ))}
           </tr>
         </tfoot>
@@ -178,7 +179,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
             fontSize: 14,
             borderRadius: 10,
             border: "none",
-            cursor: "pointer",
+            cursor: "pointer"
           }}
         >
           Leave Group
