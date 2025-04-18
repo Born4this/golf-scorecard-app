@@ -16,17 +16,11 @@ const groupSchema = new mongoose.Schema({
     enum: ["standard", "bestball"],
     default: "standard"
   },
-  teams: [
-    {
-      name: String, // optional: e.g. "Team A"
-      members: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User"
-        }
-      ]
-    }
-  ]
+  userTeamMap: {
+    type: Map,
+    of: String,
+    default: {}
+  }
 });
 
 module.exports = mongoose.model("Group", groupSchema);

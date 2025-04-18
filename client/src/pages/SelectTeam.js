@@ -25,9 +25,10 @@ export default function SelectTeam({ user, group, setGroup }) {
     }
   };
 
-  const existingTeams = [
-    ...new Set(group.users.filter(u => u.team).map(u => u.team))
-  ];
+  // Get existing teams from userTeamMap
+  const existingTeams = group.userTeamMap
+    ? [...new Set(Object.values(group.userTeamMap))]
+    : [];
 
   return (
     <div style={{ padding: 20, maxWidth: 400, margin: "0 auto", fontFamily: "sans-serif" }}>

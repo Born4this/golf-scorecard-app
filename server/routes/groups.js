@@ -45,9 +45,9 @@ router.post("/join", async (req, res) => {
   }
 });
 
-// Add team to a group (Best Ball only)
-router.post("/addTeam", async (req, res) => {
-  const { groupId, teamName, memberIds } = req.body;
+// Join a team (Best Ball only)
+router.post("/join-team", async (req, res) => {
+  const { groupId, userId, team } = req.body;
 
   try {
     const group = await Group.findById(groupId);
@@ -57,42 +57,11 @@ router.post("/addTeam", async (req, res) => {
       return res.status(400).json({ message: "Teams only allowed in bestball mode" });
     }
 
-    group.teams.push({
-      name: teamName,
-      members: memberIds
-    });
-
-    await group.save();
-    res.json(group);
-  } catch (err) {
-    console.error("❌ Error adding team:", err);
-    res.status(500).json({ message: "Failed to add team" });
-  }
-});
-
-// ✅ Join a team (Best Ball)
-router.post("/join-team", async (req, res) => {
-  const { groupId, userId, team } = req.body;
-
-  try {
-    const group = await Group.findById(groupId).populate("users");
-    if (!group) return res.status(404).json({ message: "Group not found" });
-
-    if (group.gameType !== "bestball") {
-      return res.status(400).json({ message: "Not a best ball game" });
+    if (!group.users.includes(userId)) {
+      return res.status(400).json({ message: "User must be part of the group first" });
     }
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    user.team = team;
-    await user.save();
-
-    // Replace updated user in group.users
-    group.users = group.users.map((u) =>
-      u._id.toString() === user._id.toString() ? user : u
-    );
-
+    group.userTeamMap.set(userId, team);
     const savedGroup = await group.save();
     res.json({ group: savedGroup });
   } catch (err) {
