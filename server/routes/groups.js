@@ -70,4 +70,35 @@ router.post("/addTeam", async (req, res) => {
   }
 });
 
+// Join a team within a group (Best Ball)
+router.post("/join-team", async (req, res) => {
+  const { groupId, userId, team } = req.body;
+
+  try {
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+
+    const userIndex = group.users.findIndex((u) =>
+      u._id?.toString() === userId || u.toString() === userId
+    );
+
+    if (userIndex === -1) {
+      return res.status(404).json({ message: "User not part of this group" });
+    }
+
+    // Update team field on the user object in the embedded users array
+    if (typeof group.users[userIndex] === "object") {
+      group.users[userIndex].team = team;
+    } else {
+      group.users[userIndex] = { _id: group.users[userIndex], team };
+    }
+
+    const savedGroup = await group.save();
+    res.json({ group: savedGroup });
+  } catch (err) {
+    console.error("❌ Error joining team:", err);
+    res.status(500).json({ message: "Failed to join team" });
+  }
+});
+
 module.exports = router;
