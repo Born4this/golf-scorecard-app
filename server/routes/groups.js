@@ -1,4 +1,5 @@
 // routes/groups.js
+// Requires `io` to emit real-time updates to connected clients
 module.exports = (io) => {
   const express   = require("express");
   const router    = express.Router();
@@ -29,22 +30,27 @@ module.exports = (io) => {
       const group = await Group.findById(groupId);
       if (!group) return res.status(404).json({ message: "Group not found" });
 
+      let didJoin = false;
       if (!group.users.includes(userId)) {
         group.users.push(userId);
         await group.save();
+        didJoin = true;
+      }
 
-        // Only update the Scorecard for standard mode
-        if (group.gameType === "standard") {
-          const sc = await Scorecard.findOne({ groupId });
-          if (sc && !sc.scores.has(userId.toString())) {
-            sc.scores.set(userId.toString(), new Array(18).fill(0));
-            await sc.save();
-            io.to(groupId).emit("scorecardUpdated", sc);  // broadcast update
-          }
+      // Emit group update to all clients
+      const populated = await Group.findById(groupId).populate("users");
+      io.to(groupId).emit("groupUpdated", populated);
+
+      // Also update scorecard for standard mode
+      if (populated.gameType === "standard" && didJoin) {
+        const sc = await Scorecard.findOne({ groupId });
+        if (sc && !sc.scores.has(userId.toString())) {
+          sc.scores.set(userId.toString(), new Array(18).fill(0));
+          await sc.save();
+          io.to(groupId).emit("scorecardUpdated", sc);
         }
       }
 
-      const populated = await Group.findById(groupId).populate("users");
       res.json({ group: populated });
     } catch (err) {
       console.error("❌ Error joining group:", err);
@@ -61,7 +67,7 @@ module.exports = (io) => {
       if (group.gameType !== "bestball")
         return res.status(400).json({ message: "Not a best‑ball game" });
 
-      // 1️⃣ Update the user's team field
+      // 1️⃣ Update the user's team
       const user = await User.findByIdAndUpdate(
         userId,
         { team },
@@ -75,27 +81,24 @@ module.exports = (io) => {
         await group.save();
       }
 
-      // 3️⃣ Re-fetch the populated group
+      // 3️⃣ Fetch populated group
       const populated = await Group.findById(groupId).populate("users");
 
-      // 4️⃣ Patch the Scorecard: one column per actual team
+      // 4️⃣ Patch Scorecard for current teams
       const sc = await Scorecard.findOne({ groupId });
       if (sc) {
-        const teams = [
-          ...new Set(
-            populated.users.map((u) => u.team).filter(Boolean)
-          ),
-        ];
+        const teams = [...new Set(populated.users.map((u) => u.team).filter(Boolean))];
         teams.forEach((t) => {
           if (!sc.scores.has(t)) {
             sc.scores.set(t, new Array(18).fill(0));
           }
         });
         await sc.save();
-        // broadcast both group and scorecard updates
-        io.to(groupId).emit("groupUpdated", populated);
-        io.to(groupId).emit("scorecardUpdated", sc);
       }
+
+      // Emit real-time updates
+      io.to(groupId).emit("groupUpdated", populated);
+      if (sc) io.to(groupId).emit("scorecardUpdated", sc);
 
       return res.json({ group: populated });
     } catch (err) {
