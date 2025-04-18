@@ -1,3 +1,4 @@
+// client/src/pages/SC.js
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -11,7 +12,7 @@ const socket = io(API_URL);
 export default function Scorecard({ user, group, scorecard, setScorecard }) {
   const [userNames, setUserNames] = useState({});
 
-  // Join Socket.io room and listen for updates
+  // Join the socket room and listen for updates
   useEffect(() => {
     const join = () => socket.emit("joinGroup", group._id);
     join();
@@ -23,18 +24,20 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     };
   }, [group._id, setScorecard]);
 
-  // Fetch user names for standard play
+  // Fetch names only when in STANDARD mode (team names are the headers in BEST‑BALL)
   useEffect(() => {
     if (!scorecard || !scorecard.scores) return;
-    const keys = Object.keys(scorecard.scores);
-    // Only user IDs map to names
-    axios
-      .post(`${API_URL}/api/users/names`, { userIds: keys })
-      .then((res) => setUserNames(res.data))
-      .catch((err) => console.error("❌ Error fetching user names:", err));
-  }, [scorecard]);
+    // In standard play, the keys are userIds, so we map them to names
+    if (group.gameType === "standard") {
+      const userIds = Object.keys(scorecard.scores);
+      axios
+        .post(`${API_URL}/api/users/names`, { userIds })
+        .then((res) => setUserNames(res.data))
+        .catch((err) => console.error("❌ Error fetching user names:", err));
+    }
+  }, [scorecard, group.gameType]);
 
-  // Blur inputs on window focus (iOS fix)
+  // iOS blur‑on‑focus fix
   useEffect(() => {
     const handleFocus = () => {
       document.querySelectorAll("input[type='number']").forEach((i) => i.blur());
@@ -43,16 +46,16 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
-  // Determine loading state based on standard vs bestball
-  const hasOwnScores = () => {
+  // Loading guard: only proceed when your column exists
+  const hasOwnColumn = () => {
     if (!scorecard || !user || !group) return false;
     if (group.gameType === "bestball") {
       return !!scorecard.scores[user.team];
+    } else {
+      return !!scorecard.scores[user._id];
     }
-    return !!scorecard.scores[user._id];
   };
-
-  if (!hasOwnScores()) {
+  if (!hasOwnColumn()) {
     return <p>Loading scorecard...</p>;
   }
 
@@ -103,7 +106,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
             {Object.keys(scorecard.scores).map((key) => (
               <th key={key}>
                 {group.gameType === "bestball"
-                  ? key // team name
+                  ? key                /* team name */
                   : key === user._id
                   ? "You"
                   : userNames[key] || "Player"}
@@ -138,7 +141,9 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
                         onBlur={(e) => {
                           if (e.target.value === "") updateScore(holeIndex, 0);
                         }}
-                        onChange={(e) => updateScore(holeIndex, Number(e.target.value))}
+                        onChange={(e) =>
+                          updateScore(holeIndex, Number(e.target.value))
+                        }
                       />
                     ) : (
                       value
