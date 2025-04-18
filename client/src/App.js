@@ -47,6 +47,8 @@ function App() {
   /* -------------------------------------------------------------------- */
   useEffect(() => {
     if (!group || !user) return;
+    console.log("📦 group.users:", group.users);
+
 
     const matched = group.users?.find(
       (u) => u._id?.toString() === user._id

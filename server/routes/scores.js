@@ -16,16 +16,20 @@ module.exports = (io) => {
         return res.status(400).json({ error: "groupId and users (array) required" });
       }
 
+      // Log incoming users for debugging
+      console.log("📩 Creating scorecard with users:", users);
+
       // Prevent duplicates
       const existing = await Scorecard.findOne({ groupId });
       if (existing) {
         return res.status(409).json({ error: "Scorecard already exists for this group" });
       }
 
-      // Create scores map
+      // Create scores map — support both string IDs and user objects
       const scores = {};
-      users.forEach(userId => {
-        scores[userId.toString()] = new Array(18).fill(0);
+      users.forEach((u) => {
+        const id = typeof u === "object" ? u._id : u;
+        if (id) scores[id.toString()] = new Array(18).fill(0);
       });
 
       const scorecard = new Scorecard({ groupId, scores });
@@ -55,7 +59,6 @@ module.exports = (io) => {
 
       const userIdStr = userId.toString();
 
-      // Add new user to scores if not already present
       if (!scorecard.scores.has(userIdStr)) {
         scorecard.scores.set(userIdStr, new Array(18).fill(0));
       }
