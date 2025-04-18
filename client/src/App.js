@@ -50,7 +50,7 @@ function App() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               groupId: group._id,
-              users: group.users
+              users: group.users.map(u => typeof u === "string" ? u : u._id) // ✅ Normalize
             })
           });
 
