@@ -8,6 +8,7 @@ import SelectTeam from "./pages/SelectTeam";
 import Layout from "./components/Format";
 
 function App() {
+  /* ---------- top‑level state ---------- */
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
@@ -20,57 +21,59 @@ function App() {
 
   const [scorecard, setScorecard] = useState(null);
 
-  const params = new URLSearchParams(window.location.search);
-  const groupFromURL = params.get("group");
-
+  /* ---------- keep localStorage in sync ---------- */
   useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    }
+    if (user) localStorage.setItem("user", JSON.stringify(user));
   }, [user]);
 
   useEffect(() => {
-    if (group) {
-      localStorage.setItem("group", JSON.stringify(group));
-    }
+    if (group) localStorage.setItem("group", JSON.stringify(group));
   }, [group]);
 
+  /* ---------- auto‑create / fetch scorecard ---------- */
   useEffect(() => {
     const fetchScorecard = async () => {
       if (!group || !user) return;
 
       try {
-        const res = await fetch(`https://golf-scorecard-app-u07h.onrender.com/api/scores/${group._id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setScorecard(data);
-        } else if (res.status === 404) {
-          const createRes = await fetch("https://golf-scorecard-app-u07h.onrender.com/api/scores", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              groupId: group._id,
-              users: group.users
-            })
-          });
+        const res = await fetch(
+          `https://golf-scorecard-app-u07h.onrender.com/api/scores/${group._id}`
+        );
 
-          if (createRes.ok) {
-            const data = await createRes.json();
-            setScorecard(data);
-          } else {
-            console.warn("⚠️ Could not create scorecard");
-          }
+        if (res.ok) {
+          setScorecard(await res.json());
+        } else if (res.status === 404) {
+          /* first scorecard for this group → create it */
+          const create = await fetch(
+            "https://golf-scorecard-app-u07h.onrender.com/api/scores",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                groupId: group._id,
+                users:   group.users,
+              }),
+            }
+          );
+
+          if (create.ok) setScorecard(await create.json());
+          else console.warn("⚠️ Could not create scorecard");
         } else {
           console.warn(`⚠️ Unexpected response: ${res.status}`);
         }
       } catch (err) {
-        console.error("❌ Error checking/creating scorecard:", err);
+        console.error("❌ Error checking / creating scorecard:", err);
       }
     };
 
     fetchScorecard();
   }, [group, user]);
 
+  /* ---------- invited via ?group=... ---------- */
+  const params       = new URLSearchParams(window.location.search);
+  const groupFromURL = params.get("group");
+
+  /* ---------- routing ---------- */
   return (
     <Router>
       <Routes>
@@ -78,6 +81,7 @@ function App() {
           path="/"
           element={
             <Layout>
+              {/* 1️⃣ ask for a name */}
               {!user ? (
                 <CreateUser
                   setUser={setUser}
@@ -87,7 +91,7 @@ function App() {
                     setScorecard(null);
                   }}
                 />
-              ) : !group ? (
+              ) : /* 2️⃣ create or join a group */ !group ? (
                 <JoinOrCreateGroup
                   user={user}
                   setGroup={(g) => {
@@ -95,9 +99,17 @@ function App() {
                     setScorecard(null);
                   }}
                 />
-              ) : group.gameType === "bestball" && !user.team && group.users.length > 1 ? (
-                <SelectTeam user={user} group={group} setGroup={setGroup} />
+              ) : /* 3️⃣ best‑ball team selection */ group.gameType === "bestball" &&
+                !user.team &&
+                group.users.length > 1 ? (
+                <SelectTeam
+                  user={user}
+                  group={group}
+                  setGroup={setGroup}
+                  setUser={setUser}      {/* ←  important change */}
+                />
               ) : (
+                /* 4️⃣ main scorecard */
                 <Scorecard
                   user={user}
                   group={group}

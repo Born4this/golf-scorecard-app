@@ -1,37 +1,57 @@
-// SelectTeam.js
+// client/src/pages/SelectTeam.js
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 
-export default function SelectTeam({ user, group, setGroup }) {
+export default function SelectTeam({ user, group, setGroup, setUser }) {
   const navigate = useNavigate();
 
+  /** POST /api/groups/join‑team and update local state */
   const joinTeam = async (teamName) => {
     try {
-      const res = await axios.post(`${API_URL}/api/groups/join-team`, {
-        userId: user._id,
+      const { data } = await axios.post(`${API_URL}/api/groups/join-team`, {
+        userId:  user._id,
         groupId: group._id,
-        team: teamName
+        team:    teamName
       });
 
-      if (res.status === 200) {
-        setGroup(res.data.group);
-        navigate("/");
-      }
+      /* ---------- update React state + localStorage ---------- */
+      const updatedUser  = { ...user, team: teamName };
+      const updatedGroup = data.group;
+
+      setUser(updatedUser);
+      setGroup(updatedGroup);
+
+      localStorage.setItem("user",  JSON.stringify(updatedUser));
+      localStorage.setItem("group", JSON.stringify(updatedGroup));
+
+      /* go back to the main page */
+      navigate("/");
     } catch (err) {
-      console.error("❌ Failed to join team", err);
+      console.error("❌ Failed to join team:", err);
       alert("Something went wrong joining the team.");
     }
   };
 
-  // Get existing teams from userTeamMap
-  const existingTeams = group.userTeamMap
-    ? [...new Set(Object.values(group.userTeamMap))]
-    : [];
+  /* collect existing team names (if any) */
+  const existingTeams = [
+    ...new Set(
+      (group.users || [])
+        .filter((u) => u.team)
+        .map((u) => u.team)
+    ),
+  ];
 
   return (
-    <div style={{ padding: 20, maxWidth: 400, margin: "0 auto", fontFamily: "sans-serif" }}>
+    <div
+      style={{
+        padding: 20,
+        maxWidth: 400,
+        margin: "0 auto",
+        fontFamily: "sans-serif",
+      }}
+    >
       <h2>Choose a Team</h2>
 
       {existingTeams.map((team) => (
@@ -40,7 +60,7 @@ export default function SelectTeam({ user, group, setGroup }) {
           onClick={() => joinTeam(team)}
           style={{ width: "100%", padding: 10, marginBottom: 10 }}
         >
-          Join "{team}"
+          Join “{team}”
         </button>
       ))}
 
