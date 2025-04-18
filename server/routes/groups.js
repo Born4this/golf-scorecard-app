@@ -1,8 +1,9 @@
 // routes/groups.js
-const express = require("express");
-const router  = express.Router();
-const Group   = require("../models/Group");
-const User    = require("../models/User");
+const express   = require("express");
+const router    = express.Router();
+const Group     = require("../models/Group");
+const User      = require("../models/User");
+const Scorecard = require("../models/Scorecard"); // ← ADDED
 
 /* ----------  create group  ---------- */
 router.post("/", async (req, res) => {
@@ -29,8 +30,17 @@ router.post("/join", async (req, res) => {
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
-    if (!group.users.includes(userId)) group.users.push(userId);
-    await group.save();
+    if (!group.users.includes(userId)) {
+      group.users.push(userId);
+      await group.save();
+
+      // ← ADDED: also add this user to the existing Scorecard
+      const sc = await Scorecard.findOne({ groupId });
+      if (sc && !sc.scores.has(userId.toString())) {
+        sc.scores.set(userId.toString(), new Array(18).fill(0));
+        await sc.save();
+      }
+    }
 
     const populated = await Group.findById(groupId).populate("users");
     res.json({ group: populated });
@@ -75,19 +85,18 @@ router.post("/join-team", async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { team },
-      { new: true }           // return the updated document
+      { new: true }
     );
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    /* ensure the user is listed in the group (safety) */
+    /* ensure the user is listed in the group */
     if (!group.users.map(String).includes(userId)) {
       group.users.push(userId);
       await group.save();
     }
 
-    /* 2️⃣  populate again so each user in group.users has .team */
+    /* 2️⃣  re‑populate so each user has .team */
     const populated = await Group.findById(groupId).populate("users");
-
     return res.json({ group: populated });
   } catch (err) {
     console.error("❌ Error joining team:", err);
