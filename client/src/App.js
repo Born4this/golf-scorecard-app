@@ -8,72 +8,66 @@ import SelectTeam from "./pages/SelectTeam";
 import Layout from "./components/Format";
 
 function App() {
-  /* ---------- top‑level state ---------- */
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
-  });
-
-  const [group, setGroup] = useState(() => {
-    const saved = localStorage.getItem("group");
-    return saved ? JSON.parse(saved) : null;
-  });
-
+  /* ---------- state ---------- */
+  const [user,  setUser]  = useState(() => JSON.parse(localStorage.getItem("user"))  || null);
+  const [group, setGroup] = useState(() => JSON.parse(localStorage.getItem("group")) || null);
   const [scorecard, setScorecard] = useState(null);
 
-  /* ---------- keep localStorage in sync ---------- */
+  /* ---------- persist to localStorage ---------- */
   useEffect(() => {
-    if (user) localStorage.setItem("user", JSON.stringify(user));
+    if (user)  localStorage.setItem("user",  JSON.stringify(user));
   }, [user]);
 
   useEffect(() => {
     if (group) localStorage.setItem("group", JSON.stringify(group));
   }, [group]);
 
-  /* ---------- fetch / create scorecard ---------- */
+  /* ---------- (re)load / create scorecard ---------- */
   useEffect(() => {
-    const fetchScorecard = async () => {
+    const loadScorecard = async () => {
       if (!group || !user) return;
 
+      const base = "https://golf-scorecard-app-u07h.onrender.com/api/scores";
+
       try {
-        const res = await fetch(
-          `https://golf-scorecard-app-u07h.onrender.com/api/scores/${group._id}`
-        );
+        const res = await fetch(`${base}/${group._id}`);
 
         if (res.ok) {
           setScorecard(await res.json());
-        } else if (res.status === 404) {
-          /* first scorecard for this group → create it */
-          const create = await fetch(
-            "https://golf-scorecard-app-u07h.onrender.com/api/scores",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                groupId: group._id,
-                users:   group.users,
-              }),
-            }
+          return;
+        }
+
+        if (res.status === 404) {
+          /* create it – ONLY ids, no objects! */
+          const userIds = group.users.map((u) =>
+            typeof u === "object" ? u._id : u
           );
 
-          if (create.ok) setScorecard(await create.json());
-          else console.warn("⚠️ Could not create scorecard");
-        } else {
-          console.warn(`⚠️ Unexpected response: ${res.status}`);
+          const create = await fetch(base, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ groupId: group._id, users: userIds }),
+          });
+
+          if (create.ok) {
+            setScorecard(await create.json());
+          } else {
+            console.warn("⚠️ Could not create scorecard");
+          }
         }
       } catch (err) {
-        console.error("❌ Error checking / creating scorecard:", err);
+        console.error("❌ Scorecard fetch/create failed:", err);
       }
     };
 
-    fetchScorecard();
+    loadScorecard();
   }, [group, user]);
 
-  /* ---------- invited via ?group=... ---------- */
+  /* ---------- helper for invite‑link flow ---------- */
   const params       = new URLSearchParams(window.location.search);
   const groupFromURL = params.get("group");
 
-  /* ---------- routing ---------- */
+  /* ---------- routes ---------- */
   return (
     <Router>
       <Routes>
@@ -82,7 +76,6 @@ function App() {
           element={
             <Layout>
               {!user ? (
-                /* 1️⃣ ask for name */
                 <CreateUser
                   setUser={setUser}
                   groupFromURL={groupFromURL}
@@ -92,7 +85,6 @@ function App() {
                   }}
                 />
               ) : !group ? (
-                /* 2️⃣ create / join group */
                 <JoinOrCreateGroup
                   user={user}
                   setGroup={(g) => {
@@ -103,15 +95,13 @@ function App() {
               ) : group.gameType === "bestball" &&
                 !user.team &&
                 group.users.length > 1 ? (
-                /* 3️⃣ best‑ball team picker */
                 <SelectTeam
                   user={user}
+                  setUser={setUser}     /* update user with team */
                   group={group}
                   setGroup={setGroup}
-                  setUser={setUser}   // ← now wired through
                 />
               ) : (
-                /* 4️⃣ main scorecard */
                 <Scorecard
                   user={user}
                   group={group}
