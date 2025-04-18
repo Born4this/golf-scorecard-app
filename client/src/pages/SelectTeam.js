@@ -1,48 +1,59 @@
 // client/src/pages/SelectTeam.js
+import { useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 
-export default function SelectTeam({ user, group, setGroup, setUser }) {
+export default function SelectTeam({ user, group, setGroup }) {
   const navigate = useNavigate();
 
-  /** POST /api/groups/join‑team and update local state */
+  /* -------------------------------------------
+     Build a de‑duplicated list of existing teams
+  -------------------------------------------- */
+  const existingTeams = useMemo(() => {
+    if (!group?.users) return [];
+
+    return [
+      ...new Set(
+        group.users
+          .filter((u) => typeof u === "object" && u.team) // only objects with a team field
+          .map((u) => u.team)
+      ),
+    ];
+  }, [group]);
+
+  /* -------------------------------------------
+     Join or create a team, then return to / (scorecard)
+  -------------------------------------------- */
   const joinTeam = async (teamName) => {
     try {
-      const { data } = await axios.post(`${API_URL}/api/groups/join-team`, {
+      const res = await axios.post(`${API_URL}/api/groups/join-team`, {
         userId:  user._id,
         groupId: group._id,
-        team:    teamName
+        team:    teamName,
       });
 
-      /* ---------- update React state + localStorage ---------- */
-      const updatedUser  = { ...user, team: teamName };
-      const updatedGroup = data.group;
+      if (res.status === 200) {
+        const updatedGroup = res.data.group;
+        const updatedUser  = { ...user, team: teamName };
 
-      setUser(updatedUser);
-      setGroup(updatedGroup);
+        // persist to localStorage so refreshes keep the state
+        localStorage.setItem("group", JSON.stringify(updatedGroup));
+        localStorage.setItem("user",  JSON.stringify(updatedUser));
 
-      localStorage.setItem("user",  JSON.stringify(updatedUser));
-      localStorage.setItem("group", JSON.stringify(updatedGroup));
-
-      /* go back to the main page */
-      navigate("/");
+        setGroup(updatedGroup);          // lift state up
+        navigate("/");                   // back to the scorecard
+      }
     } catch (err) {
-      console.error("❌ Failed to join team:", err);
+      console.error("❌ Failed to join team", err);
       alert("Something went wrong joining the team.");
     }
   };
 
-  /* collect existing team names (if any) */
-  const existingTeams = [
-    ...new Set(
-      (group.users || [])
-        .filter((u) => u.team)
-        .map((u) => u.team)
-    ),
-  ];
-
+  /* -------------------------------------------
+     Render
+  -------------------------------------------- */
   return (
     <div
       style={{
@@ -52,21 +63,38 @@ export default function SelectTeam({ user, group, setGroup, setUser }) {
         fontFamily: "sans-serif",
       }}
     >
-      <h2>Choose a Team</h2>
+      <h2 style={{ textAlign: "center", marginBottom: 24 }}>Choose a Team</h2>
 
       {existingTeams.map((team) => (
         <button
           key={team}
           onClick={() => joinTeam(team)}
-          style={{ width: "100%", padding: 10, marginBottom: 10 }}
+          style={{
+            width:        "100%",
+            padding:      12,
+            marginBottom: 12,
+            border:       "none",
+            borderRadius: 8,
+            background:   "#007bff",
+            color:        "#fff",
+            cursor:       "pointer",
+          }}
         >
           Join “{team}”
         </button>
       ))}
 
       <button
-        onClick={() => joinTeam(`Team${Date.now()}`)}
-        style={{ width: "100%", padding: 10 }}
+        onClick={() => joinTeam(`Team-${Date.now().toString(36).slice(-4)}`)}
+        style={{
+          width:        "100%",
+          padding:      12,
+          border:       "none",
+          borderRadius: 8,
+          background:   "#28a745",
+          color:        "#fff",
+          cursor:       "pointer",
+        }}
       >
         Create New Team
       </button>

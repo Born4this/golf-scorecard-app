@@ -1,19 +1,39 @@
+// client/src/App.js
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import CreateUser from "./pages/CreateUser";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+} from "react-router-dom";
+
+import CreateUser        from "./pages/CreateUser";
 import JoinOrCreateGroup from "./pages/JoinOrCreateGroup";
-import Scorecard from "./pages/SC";
-import ViewScorecard from "./pages/ViewScorecard";
-import SelectTeam from "./pages/SelectTeam";
-import Layout from "./components/Format";
+import SelectTeam        from "./pages/SelectTeam";
+import Scorecard         from "./pages/SC";
+import ViewScorecard     from "./pages/ViewScorecard";
+import Layout            from "./components/Format";
+
+const API_URL = "https://golf-scorecard-app-u07h.onrender.com"; // for scorecard fetch
 
 function App() {
-  /* ---------- state ---------- */
-  const [user,  setUser]  = useState(() => JSON.parse(localStorage.getItem("user"))  || null);
-  const [group, setGroup] = useState(() => JSON.parse(localStorage.getItem("group")) || null);
+  /* -------------------------------------------------------------------- */
+  /*  State                                                                */
+  /* -------------------------------------------------------------------- */
+  const [user,  setUser]  = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [group, setGroup] = useState(() => {
+    const saved = localStorage.getItem("group");
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [scorecard, setScorecard] = useState(null);
 
-  /* ---------- persist to localStorage ---------- */
+  /* -------------------------------------------------------------------- */
+  /*  Persist user / group to localStorage                                */
+  /* -------------------------------------------------------------------- */
   useEffect(() => {
     if (user)  localStorage.setItem("user",  JSON.stringify(user));
   }, [user]);
@@ -22,52 +42,69 @@ function App() {
     if (group) localStorage.setItem("group", JSON.stringify(group));
   }, [group]);
 
-  /* ---------- (re)load / create scorecard ---------- */
+  /* -------------------------------------------------------------------- */
+  /*  Keep user.team in sync after group updates                          */
+  /* -------------------------------------------------------------------- */
   useEffect(() => {
-    const loadScorecard = async () => {
+    if (!group || !user) return;
+
+    const matched = group.users?.find(
+      (u) => u._id?.toString() === user._id
+    );
+
+    if (matched && matched.team && matched.team !== user.team) {
+      setUser((prev) => ({ ...prev, team: matched.team }));
+    }
+  }, [group, user]);
+
+  /* -------------------------------------------------------------------- */
+  /*  Fetch / create scorecard when user + group are ready                */
+  /* -------------------------------------------------------------------- */
+  useEffect(() => {
+    const fetchScorecard = async () => {
       if (!group || !user) return;
 
-      const base = "https://golf-scorecard-app-u07h.onrender.com/api/scores";
-
       try {
-        const res = await fetch(`${base}/${group._id}`);
+        const res = await fetch(`${API_URL}/api/scores/${group._id}`);
 
         if (res.ok) {
           setScorecard(await res.json());
-          return;
-        }
-
-        if (res.status === 404) {
-          /* create it – ONLY ids, no objects! */
-          const userIds = group.users.map((u) =>
-            typeof u === "object" ? u._id : u
-          );
-
-          const create = await fetch(base, {
-            method: "POST",
+        } else if (res.status === 404) {
+          // none yet – create a fresh one
+          const createRes = await fetch(`${API_URL}/api/scores`, {
+            method:  "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ groupId: group._id, users: userIds }),
+            body:    JSON.stringify({
+              groupId: group._id,
+              users:   group.users.map((u) => (typeof u === "object" ? u._id : u)),
+            }),
           });
 
-          if (create.ok) {
-            setScorecard(await create.json());
+          if (createRes.ok) {
+            setScorecard(await createRes.json());
           } else {
             console.warn("⚠️ Could not create scorecard");
           }
+        } else {
+          console.warn(`⚠️ Unexpected response fetching scorecard: ${res.status}`);
         }
       } catch (err) {
-        console.error("❌ Scorecard fetch/create failed:", err);
+        console.error("❌ Error checking/creating scorecard:", err);
       }
     };
 
-    loadScorecard();
+    fetchScorecard();
   }, [group, user]);
 
-  /* ---------- helper for invite‑link flow ---------- */
-  const params       = new URLSearchParams(window.location.search);
-  const groupFromURL = params.get("group");
+  /* -------------------------------------------------------------------- */
+  /*  Invite‑link support                                                 */
+  /* -------------------------------------------------------------------- */
+  const params        = new URLSearchParams(window.location.search);
+  const groupFromURL  = params.get("group");
 
-  /* ---------- routes ---------- */
+  /* -------------------------------------------------------------------- */
+  /*  Routing                                                             */
+  /* -------------------------------------------------------------------- */
   return (
     <Router>
       <Routes>
@@ -75,6 +112,7 @@ function App() {
           path="/"
           element={
             <Layout>
+              {/* 1️⃣  CREATE USER */}
               {!user ? (
                 <CreateUser
                   setUser={setUser}
@@ -84,7 +122,8 @@ function App() {
                     setScorecard(null);
                   }}
                 />
-              ) : !group ? (
+              ) : /* 2️⃣  CHOOSE / JOIN GROUP */
+              !group ? (
                 <JoinOrCreateGroup
                   user={user}
                   setGroup={(g) => {
@@ -92,16 +131,17 @@ function App() {
                     setScorecard(null);
                   }}
                 />
-              ) : group.gameType === "bestball" &&
-                !user.team &&
-                group.users.length > 1 ? (
+              ) : /* 3️⃣  BEST BALL – CHOOSE TEAM */
+              group.gameType === "bestball" &&
+              !user.team &&
+              group.users.length > 1 ? (
                 <SelectTeam
                   user={user}
-                  setUser={setUser}     /* update user with team */
                   group={group}
                   setGroup={setGroup}
                 />
-              ) : (
+              ) : /* 4️⃣  SCORECARD */
+              (
                 <Scorecard
                   user={user}
                   group={group}
@@ -112,6 +152,8 @@ function App() {
             </Layout>
           }
         />
+
+        {/* Public / read‑only scorecard share link */}
         <Route path="/scorecard/:groupId" element={<ViewScorecard />} />
       </Routes>
     </Router>
