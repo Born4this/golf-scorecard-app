@@ -30,7 +30,7 @@ function App() {
     if (group) localStorage.setItem("group", JSON.stringify(group));
   }, [group]);
 
-  /* ---------- auto‑create / fetch scorecard ---------- */
+  /* ---------- fetch / create scorecard ---------- */
   useEffect(() => {
     const fetchScorecard = async () => {
       if (!group || !user) return;
@@ -81,8 +81,8 @@ function App() {
           path="/"
           element={
             <Layout>
-              {/* 1️⃣ ask for a name */}
               {!user ? (
+                /* 1️⃣ ask for name */
                 <CreateUser
                   setUser={setUser}
                   groupFromURL={groupFromURL}
@@ -91,7 +91,8 @@ function App() {
                     setScorecard(null);
                   }}
                 />
-              ) : /* 2️⃣ create or join a group */ !group ? (
+              ) : !group ? (
+                /* 2️⃣ create / join group */
                 <JoinOrCreateGroup
                   user={user}
                   setGroup={(g) => {
@@ -99,14 +100,15 @@ function App() {
                     setScorecard(null);
                   }}
                 />
-              ) : /* 3️⃣ best‑ball team selection */ group.gameType === "bestball" &&
+              ) : group.gameType === "bestball" &&
                 !user.team &&
                 group.users.length > 1 ? (
+                /* 3️⃣ best‑ball team picker */
                 <SelectTeam
                   user={user}
                   group={group}
                   setGroup={setGroup}
-                  setUser={setUser}      {/* ←  important change */}
+                  setUser={setUser}   // ← now wired through
                 />
               ) : (
                 /* 4️⃣ main scorecard */
