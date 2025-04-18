@@ -4,6 +4,7 @@ import CreateUser from "./pages/CreateUser";
 import JoinOrCreateGroup from "./pages/JoinOrCreateGroup";
 import Scorecard from "./pages/SC";
 import ViewScorecard from "./pages/ViewScorecard";
+import SelectTeam from "./pages/SelectTeam";
 import Layout from "./components/Format";
 
 function App() {
@@ -94,6 +95,8 @@ function App() {
                     setScorecard(null);
                   }}
                 />
+              ) : group.gameType === "bestball" && !user.team ? (
+                <SelectTeam user={user} group={group} setGroup={setGroup} />
               ) : (
                 <Scorecard
                   user={user}

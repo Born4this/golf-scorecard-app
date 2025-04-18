@@ -1,20 +1,17 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-// Hardcode the API URL
-const API_URL = "https://golf-scorecard-app-u07h.onrender.com"; // Replace with your actual Render backend URL
+const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 
 export default function JoinOrCreateGroup({ user, setGroup }) {
   const [groupName, setGroupName] = useState("");
   const [joinGroupId, setJoinGroupId] = useState("");
+  const [gameType, setGameType] = useState("standard");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const groupFromURL = params.get("group");
-
-    if (groupFromURL) {
-      setJoinGroupId(groupFromURL);
-    }
+    if (groupFromURL) setJoinGroupId(groupFromURL);
   }, []);
 
   const createGroup = async () => {
@@ -23,7 +20,8 @@ export default function JoinOrCreateGroup({ user, setGroup }) {
     try {
       const res = await axios.post(`${API_URL}/api/groups`, {
         groupName,
-        userId: user._id
+        userId: user._id,
+        gameType
       });
 
       setGroup(res.data);
@@ -60,8 +58,42 @@ export default function JoinOrCreateGroup({ user, setGroup }) {
           placeholder="e.g., Team A"
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
-          style={{ width: "100%", padding: 8, marginBottom: 10, fontSize: 16 }}
+          style={{ width: "100%", padding: 8, marginBottom: 12, fontSize: 16 }}
         />
+
+        <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+          <button
+            onClick={() => setGameType("standard")}
+            style={{
+              flex: 1,
+              padding: 10,
+              fontSize: 16,
+              backgroundColor: gameType === "standard" ? "#007bff" : "#ddd",
+              color: gameType === "standard" ? "#fff" : "#333",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer"
+            }}
+          >
+            Standard
+          </button>
+          <button
+            onClick={() => setGameType("bestball")}
+            style={{
+              flex: 1,
+              padding: 10,
+              fontSize: 16,
+              backgroundColor: gameType === "bestball" ? "#007bff" : "#ddd",
+              color: gameType === "bestball" ? "#fff" : "#333",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer"
+            }}
+          >
+            Best Ball
+          </button>
+        </div>
+
         <button onClick={createGroup} style={{ width: "100%", padding: 10 }}>
           Create Group
         </button>

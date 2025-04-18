@@ -107,7 +107,7 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
       <table>
         <thead>
           <tr>
-            <th style={{ textAlign: "left" }}>Hole</th>
+            <th style={{ textAlign: "center" }}>Hole</th>
             {Object.keys(scorecard.scores).map((uid) => (
               <th key={uid}>
                 {uid === user._id ? "You" : userNames[uid] || "Player"}
