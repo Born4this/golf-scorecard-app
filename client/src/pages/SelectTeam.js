@@ -1,18 +1,28 @@
 // SelectTeam.js
-import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+const API_URL = "https://golf-scorecard-app-u07h.onrender.com";
 
 export default function SelectTeam({ user, group, setGroup }) {
-  const [teamChoice, setTeamChoice] = useState("");
+  const navigate = useNavigate();
 
-  const joinTeam = (teamName) => {
-    const updatedUser = { ...user, team: teamName };
-    const updatedGroup = {
-      ...group,
-      users: group.users.map((u) =>
-        u._id === user._id ? updatedUser : u
-      )
-    };
-    setGroup(updatedGroup);
+  const joinTeam = async (teamName) => {
+    try {
+      const res = await axios.post(`${API_URL}/api/groups/join-team`, {
+        userId: user._id,
+        groupId: group._id,
+        team: teamName
+      });
+
+      if (res.status === 200) {
+        setGroup(res.data.group);
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("❌ Failed to join team", err);
+      alert("Something went wrong joining the team.");
+    }
   };
 
   const existingTeams = [
