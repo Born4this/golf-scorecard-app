@@ -106,15 +106,20 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
         <thead>
           <tr>
             <th style={{ textAlign: "center" }}>Hole</th>
-            {columns.map((key) => (
-              <th key={key}>
-                {group.gameType === "bestball"
-                  ? key
-                  : key === user._id
-                  ? "You"
-                  : userNames[key] || "Player"}
-              </th>
-            ))}
+            {columns.map((key) => {
+              // Use player names combined for team header
+              let label;
+              if (group.gameType === "bestball") {
+                const names = group.users
+                  .filter((u) => u.team === key)
+                  .map((u) => u.name)
+                  .join(" & ");
+                label = names;
+              } else {
+                label = key === user._id ? "You" : userNames[key] || "Player";
+              }
+              return <th key={key}>{label}</th>;
+            })}
           </tr>
         </thead>
 
