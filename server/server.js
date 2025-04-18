@@ -1,3 +1,4 @@
+// server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -7,61 +8,62 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 
-// ✅ Allow both Vercel and your custom domain
+// ─── CORS WHITELIST ───────────────────────────────────────────────────────────
 const allowedOrigins = [
+  "https://www.live-scorecard.com",
   "https://golf-scorecard-app.vercel.app",
-  "https://live-scorecard.com", 
-  "https://www.live-scorecard.com" // 👈 Replace with your real domain
+  "https://golf-scorecard-app-git-main-born4this-projects.vercel.app",
+  "https://golf-scorecard-jseamlkx9-born4this-projects.vercel.app"
 ];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
+      // allow non-browser requests (e.g. Postman) or whitelisted origins
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+        return callback(null, true);
       }
+      return callback(new Error("Not allowed by CORS"));
     },
     methods: ["GET", "POST", "PATCH"],
     credentials: true
   })
 );
 
+// ─── BODY PARSING ───────────────────────────────────────────────────────────────
 app.use(express.json());
 
-// ⚡ Setup Socket.io with CORS fix
+// ─── SOCKET.IO SETUP ────────────────────────────────────────────────────────────
 const { Server } = require("socket.io");
 const io = new Server(server, {
   cors: {
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+        return callback(null, true);
       }
+      return callback(new Error("Not allowed by CORS"));
     },
     methods: ["GET", "POST", "PATCH"],
     credentials: true
   }
 });
 
-// 🟢 Connect to MongoDB
+// ─── MONGODB CONNECTION ─────────────────────────────────────────────────────────
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
+  .catch((err) => console.error(err));
 
-// 🛣️ Register routes
-const userRoutes = require("./routes/users");
+// ─── REGISTER ROUTES ───────────────────────────────────────────────────────────
+const userRoutes  = require("./routes/users");
 const groupRoutes = require("./routes/groups");
-const scoreRoutes = require("./routes/scores")(io); // pass socket.io
+const scoreRoutes = require("./routes/scores")(io);
 
-app.use("/api/users", userRoutes);
+app.use("/api/users",  userRoutes);
 app.use("/api/groups", groupRoutes);
-app.use("/api/scores", scoreRoutes);
+app.use("/api/scores",  scoreRoutes);
 
-// ⚡ Handle Socket.io events
+// ─── SOCKET.IO EVENTS ───────────────────────────────────────────────────────────
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
@@ -75,6 +77,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// 🟢 Start the server
+// ─── START SERVER ───────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5050;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
