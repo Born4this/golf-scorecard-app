@@ -1,5 +1,8 @@
-const express = require("express");
+// routes/scores.js
+const express   = require("express");
 const Scorecard = require("../models/Scorecard");
+const Group     = require("../models/Group");
+const User      = require("../models/User");
 
 module.exports = (io) => {
   const router = express.Router();
@@ -10,14 +13,13 @@ module.exports = (io) => {
   // ----------------------------------
   router.post("/", async (req, res) => {
     try {
-      const { groupId, users } = req.body;
+      const { groupId } = req.body;
 
-      if (!groupId || !Array.isArray(users)) {
-        return res.status(400).json({ error: "groupId and users (array) required" });
+      if (!groupId) {
+        return res.status(400).json({ error: "groupId required" });
       }
 
-      // Log incoming users for debugging
-      console.log("📩 Creating scorecard with users:", users);
+      console.log("📩 Creating scorecard for group:", groupId);
 
       // Prevent duplicates
       const existing = await Scorecard.findOne({ groupId });
@@ -25,12 +27,25 @@ module.exports = (io) => {
         return res.status(409).json({ error: "Scorecard already exists for this group" });
       }
 
-      // Create scores map — support both string IDs and user objects
+      // Load group to determine gameType and users/teams
+      const group = await Group.findById(groupId).populate("users");
+      if (!group) {
+        return res.status(404).json({ error: "Group not found" });
+      }
+
+      // Build scores map: per-team for bestball, per-user for standard
       const scores = {};
-      users.forEach((u) => {
-        const id = typeof u === "object" ? u._id : u;
-        if (id) scores[id.toString()] = new Array(18).fill(0);
-      });
+      if (group.gameType === "bestball") {
+        const teams = [...new Set(group.users.map((u) => u.team).filter(Boolean))];
+        teams.forEach((team) => {
+          scores[team] = new Array(18).fill(0);
+        });
+      } else {
+        group.users.forEach((u) => {
+          const id = u._id.toString();
+          scores[id] = new Array(18).fill(0);
+        });
+      }
 
       const scorecard = new Scorecard({ groupId, scores });
       await scorecard.save();
@@ -44,7 +59,7 @@ module.exports = (io) => {
 
   // ----------------------------------
   // PATCH /api/scores/update
-  // Update a specific user's hole score
+  // Update a specific user's or team's hole score
   // ----------------------------------
   router.patch("/update", async (req, res) => {
     try {
@@ -55,22 +70,35 @@ module.exports = (io) => {
       }
 
       const scorecard = await Scorecard.findOne({ groupId });
-      if (!scorecard) return res.status(404).json({ error: "Scorecard not found" });
-
-      const userIdStr = userId.toString();
-
-      if (!scorecard.scores.has(userIdStr)) {
-        scorecard.scores.set(userIdStr, new Array(18).fill(0));
+      if (!scorecard) {
+        return res.status(404).json({ error: "Scorecard not found" });
       }
 
-      const userScores = scorecard.scores.get(userIdStr);
-      userScores[holeIndex] = strokes;
-      scorecard.scores.set(userIdStr, userScores);
+      // Determine key: team name for bestball, userId string for standard
+      const group = await Group.findById(groupId);
+      let key;
+      if (group?.gameType === "bestball") {
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: "User not found" });
+        key = user.team;
+      } else {
+        key = userId.toString();
+      }
+
+      // Initialize array if missing
+      if (!scorecard.scores.has(key)) {
+        scorecard.scores.set(key, new Array(18).fill(0));
+      }
+
+      // Update the strokes
+      const arr = scorecard.scores.get(key);
+      arr[holeIndex] = strokes;
+      scorecard.scores.set(key, arr);
 
       scorecard.updatedAt = new Date();
       await scorecard.save();
 
-      // 🔁 Broadcast real-time update
+      // Broadcast real-time update
       io.to(groupId).emit("scorecardUpdated", scorecard);
 
       res.status(200).json({ message: "Score updated", scores: scorecard.scores });
@@ -89,7 +117,9 @@ module.exports = (io) => {
       const { groupId } = req.params;
 
       const scorecard = await Scorecard.findOne({ groupId });
-      if (!scorecard) return res.status(404).json({ error: "Scorecard not found" });
+      if (!scorecard) {
+        return res.status(404).json({ error: "Scorecard not found" });
+      }
 
       res.status(200).json(scorecard);
     } catch (err) {
