@@ -4,9 +4,7 @@ const router  = express.Router();
 const Group   = require("../models/Group");
 const User    = require("../models/User");
 
-/* ──────────────────────────────────────────────────────────
-   CREATE a new group
-   ────────────────────────────────────────────────────────── */
+/* ----------  create group  ---------- */
 router.post("/", async (req, res) => {
   const { groupName, userId, gameType = "standard" } = req.body;
 
@@ -14,23 +12,16 @@ router.post("/", async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const newGroup = new Group({
-      groupName,
-      users: [userId],
-      gameType
-    });
-
-    const savedGroup = await newGroup.save();
-    res.json(savedGroup);
+    const newGroup = new Group({ groupName, users: [userId], gameType });
+    const saved    = await newGroup.save();
+    res.json(saved);
   } catch (err) {
     console.error("❌ Error creating group:", err);
     res.status(500).json({ message: "Failed to create group" });
   }
 });
 
-/* ──────────────────────────────────────────────────────────
-   JOIN an existing group
-   ────────────────────────────────────────────────────────── */
+/* ----------  join group  ---------- */
 router.post("/join", async (req, res) => {
   const { groupId, userId } = req.body;
 
@@ -38,81 +29,66 @@ router.post("/join", async (req, res) => {
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
-    if (!group.users.includes(userId)) {
-      group.users.push(userId);
-    }
+    if (!group.users.includes(userId)) group.users.push(userId);
+    await group.save();
 
-    const savedGroup = await group.save();
-    res.json({ group: savedGroup });
+    const populated = await Group.findById(groupId).populate("users");
+    res.json({ group: populated });
   } catch (err) {
     console.error("❌ Error joining group:", err);
     res.status(500).json({ message: "Failed to join group" });
   }
 });
 
-/* ──────────────────────────────────────────────────────────
-   ADD a brand‑new team to a Best‑Ball group (optional route)
-   ────────────────────────────────────────────────────────── */
+/* ----------  add team (optional)  ---------- */
 router.post("/addTeam", async (req, res) => {
   const { groupId, teamName, memberIds } = req.body;
 
   try {
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
-
-    if (group.gameType !== "bestball") {
-      return res.status(400).json({ message: "Teams only allowed in best‑ball mode" });
-    }
+    if (group.gameType !== "bestball")
+      return res.status(400).json({ message: "Teams allowed only in best‑ball" });
 
     group.teams.push({ name: teamName, members: memberIds });
     await group.save();
 
-    res.json(group);
+    const populated = await Group.findById(groupId).populate("users");
+    res.json(populated);
   } catch (err) {
     console.error("❌ Error adding team:", err);
     res.status(500).json({ message: "Failed to add team" });
   }
 });
 
-/* ──────────────────────────────────────────────────────────
-   JOIN (or create) a team inside a Best‑Ball group
-   ────────────────────────────────────────────────────────── */
+/* ----------  join team (BEST‑BALL)  ---------- */
 router.post("/join-team", async (req, res) => {
   const { groupId, userId, team } = req.body;
 
   try {
-    // 1️⃣ Validate group & user
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
-    if (group.gameType !== "bestball") {
+    if (group.gameType !== "bestball")
       return res.status(400).json({ message: "Not a best‑ball game" });
-    }
 
-    const user = await User.findById(userId);
+    /* 1️⃣  update the user's team field */
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { team },
+      { new: true }           // return the updated document
+    );
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // 2️⃣ Assign the user a team
-    user.team = team;
-    await user.save();
-
-    // 3️⃣ Ensure the team exists in group.teams and contains this user
-    let teamDoc = group.teams.find((t) => t.name === team);
-    if (!teamDoc) {
-      // Team doesn’t exist yet → create it
-      teamDoc = { name: team, members: [user._id] };
-      group.teams.push(teamDoc);
-    } else {
-      // Team exists → add user if missing
-      if (!teamDoc.members.some((m) => m.toString() === user._id.toString())) {
-        teamDoc.members.push(user._id);
-      }
+    /* ensure the user is listed in the group (safety) */
+    if (!group.users.map(String).includes(userId)) {
+      group.users.push(userId);
+      await group.save();
     }
 
-    await group.save();
+    /* 2️⃣  populate again so each user in group.users has .team */
+    const populated = await Group.findById(groupId).populate("users");
 
-    // 4️⃣ Return the updated group populated with users
-    const populated = await Group.findById(groupId).populate("users").lean();
-    res.json({ group: populated });
+    return res.json({ group: populated });
   } catch (err) {
     console.error("❌ Error joining team:", err);
     res.status(500).json({ message: "Failed to join team" });
