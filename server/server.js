@@ -56,7 +56,7 @@ mongoose
 
 // ─── REGISTER ROUTES ───────────────────────────────────────────────────────────
 const userRoutes  = require("./routes/users");
-const groupRoutes = require("./routes/groups");
+const groupRoutes = require("./routes/groups")(io);   // ← pass io into group routes
 const scoreRoutes = require("./routes/scores")(io);
 
 app.use("/api/users",  userRoutes);

@@ -148,6 +148,7 @@ function App() {
                   group={group}
                   scorecard={scorecard}
                   setScorecard={setScorecard}
+                  setGroup={setGroup}     // ← subscribe to group updates
                 />
               )}
             </Layout>

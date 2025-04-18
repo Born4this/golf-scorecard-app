@@ -8,7 +8,7 @@ const FRONTEND_URL = "https://live-scorecard.com";
 
 const socket = io(API_URL);
 
-export default function Scorecard({ user, group, scorecard, setScorecard }) {
+export default function Scorecard({ user, group, scorecard, setScorecard, setGroup }) {
   const [userNames, setUserNames] = useState({});
 
   // Join Socket.io room and listen for updates
@@ -17,11 +17,13 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
     join();
     socket.on("connect", join);
     socket.on("scorecardUpdated", (updated) => setScorecard(updated));
+    socket.on("groupUpdated", (updatedGroup) => setGroup(updatedGroup));
     return () => {
       socket.off("connect", join);
       socket.off("scorecardUpdated");
+      socket.off("groupUpdated");
     };
-  }, [group._id, setScorecard]);
+  }, [group._id, setScorecard, setGroup]);
 
   // Fetch player names only in standard mode
   useEffect(() => {
@@ -107,7 +109,6 @@ export default function Scorecard({ user, group, scorecard, setScorecard }) {
           <tr>
             <th style={{ textAlign: "center" }}>Hole</th>
             {columns.map((key) => {
-              // Use player names combined for team header
               let label;
               if (group.gameType === "bestball") {
                 const names = group.users
